@@ -76,5 +76,40 @@
     "sha256": "59188ff3079575d4547fc739c3163dc0adf756c04c59f25d1b90283e6f91b1e1",
     "image_hash": "1616972714000414",
     "bytes": 119205
+  },
+  "INV-6201": {
+    "file": "INV-6201.png",
+    "pdf": "INV-6201.pdf",
+    "sha256": "136fcf61e7e6ab11a49daa4e7d50dcbad1913ed44a58eb59d7e53b0189925e7b",
+    "image_hash": "797061036c00002d",
+    "bytes": 127311
+  },
+  "INV-6202": {
+    "file": "INV-6202.png",
+    "pdf": "INV-6202.pdf",
+    "sha256": "1660a41e27f32e41c6c6239faab4fda5291e29636037d7543e127c22691c0bba",
+    "image_hash": "797071012800002d",
+    "bytes": 121945
+  },
+  "INV-6203": {
+    "file": "INV-6203.png",
+    "pdf": "INV-6203.pdf",
+    "sha256": "ea01aca3ef922cf373a9e43e12c2d535266d41d23bb03566a0781822211cd3bb",
+    "image_hash": "797071212800002d",
+    "bytes": 124897
+  },
+  "INV-6204": {
+    "file": "INV-6204.png",
+    "pdf": "INV-6204.pdf",
+    "sha256": "42fac666b7607f3728fe8666c8da6b2a4722066ccf08b67087afeb822c0d6a12",
+    "image_hash": "396071012c00002d",
+    "bytes": 120479
+  },
+  "INV-6205": {
+    "file": "INV-6205.png",
+    "pdf": "INV-6205.pdf",
+    "sha256": "d69453c39041a8726ef579e1bf0b5774f5f45e9939128407c00f55c6300c506d",
+    "image_hash": "797071112800002d",
+    "bytes": 125732
   }
 }

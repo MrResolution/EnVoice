@@ -21,10 +21,15 @@ const SAMPLES = [
   ['INV-5103.png', 'INV-5103 · Pedal Dustbins', 'Peacock Retail · ₹1,18,000', 'Ravi Plastics'],
   ['INV-5104.png', 'INV-5104 · Plastic Crates', 'Peacock Retail · ₹1,41,600', 'Ravi Plastics'],
   ['INV-5105.png', 'INV-5105 · Water Containers', 'Peacock Retail · ₹1,06,200', 'Ravi Plastics'],
+  ['INV-6201.png', 'INV-6201 · Multi-Item Bins', 'Banyan Stores · ₹1,77,000', 'Ravi Plastics'],
+  ['INV-6202.png', 'INV-6202 · Chemical Drums', 'Lotus Wholesale · ₹2,12,400', 'Ravi Plastics'],
+  ['INV-6203.png', 'INV-6203 · Harvest Crates', 'Newleaf Foods · ₹1,65,200', 'Ravi Plastics'],
+  ['INV-6205.png', 'INV-6205 · Export Pallets', 'Kaveri Retail · ₹3,18,600', 'Ravi Plastics'],
   ['S2-duplicate.png', 'S2 · exact copy of S1', 'should be blocked', 'Ravi Plastics'],
   ['S3-mismatch.png', 'S3 · 100 billed, 80 delivered', 'Banyan Stores · ₹59,000', 'Ravi Plastics'],
   ['S5-tamper-target.png', 'S5 · clean invoice', 'Banyan Stores · ₹88,500', 'Ravi Plastics'],
   ['S6-edited-copy.png', 'S6 · S1 with edits', 'number, total and bank changed', 'Ravi Plastics'],
+  ['INV-6204.png', 'INV-6204 · Steel Racks', 'Peacock Retail · ₹2,36,000', 'Kaveri Traders'],
   ['S4-self-dealing.png', 'S4 · to Kaveri Retail', 'shares a bank account', 'Kaveri Traders'],
 ] as const
 

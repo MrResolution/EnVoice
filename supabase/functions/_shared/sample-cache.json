@@ -273,5 +273,137 @@
       }
     ],
     "confidence": 0.99
+  },
+  "136fcf61e7e6ab11a49daa4e7d50dcbad1913ed44a58eb59d7e53b0189925e7b": {
+    "invoice_no": "INV-6201",
+    "invoice_date": "2026-10-11",
+    "due_date": "2026-12-10",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Banyan Stores",
+    "buyer_gstin": "33AADCB8834E1Z3",
+    "po_number": "PO-6201",
+    "bank_account": "918020014321",
+    "subtotal": 150000.0,
+    "tax_amount": 27000.0,
+    "amount": 177000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Heavy-duty plastic bin 30L",
+        "hsn": "3923",
+        "qty": 250,
+        "unit_price": 300.0,
+        "amount": 75000.0
+      },
+      {
+        "description": "Modular storage organizer",
+        "hsn": "3924",
+        "qty": 150,
+        "unit_price": 500.0,
+        "amount": 75000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "1660a41e27f32e41c6c6239faab4fda5291e29636037d7543e127c22691c0bba": {
+    "invoice_no": "INV-6202",
+    "invoice_date": "2026-10-10",
+    "due_date": "2026-12-09",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Lotus Wholesale",
+    "buyer_gstin": "33AAECL6612F1Z1",
+    "po_number": "PO-6202",
+    "bank_account": "918020014321",
+    "subtotal": 180000.0,
+    "tax_amount": 32400.0,
+    "amount": 212400.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "200 L industrial chemical drum UN-certified",
+        "hsn": "3923",
+        "qty": 120,
+        "unit_price": 1500.0,
+        "amount": 180000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "ea01aca3ef922cf373a9e43e12c2d535266d41d23bb03566a0781822211cd3bb": {
+    "invoice_no": "INV-6203",
+    "invoice_date": "2026-10-09",
+    "due_date": "2026-12-08",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Newleaf Foods",
+    "buyer_gstin": "33AAFCN3307G1Z8",
+    "po_number": "PO-6203",
+    "bank_account": "918020014321",
+    "subtotal": 140000.0,
+    "tax_amount": 25200.0,
+    "amount": 165200.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Food-grade perforated harvest crate 35L",
+        "hsn": "3923",
+        "qty": 800,
+        "unit_price": 175.0,
+        "amount": 140000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "42fac666b7607f3728fe8666c8da6b2a4722066ccf08b67087afeb822c0d6a12": {
+    "invoice_no": "INV-6204",
+    "invoice_date": "2026-10-08",
+    "due_date": "2026-12-07",
+    "vendor_name": "Kaveri Traders",
+    "vendor_gstin": "33AAKFK7731M1Z2",
+    "buyer_name": "Peacock Retail",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-6204",
+    "bank_account": "602010057788",
+    "subtotal": 200000.0,
+    "tax_amount": 36000.0,
+    "amount": 236000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Heavy-duty 5-shelf powder-coated steel display rack",
+        "hsn": "9403",
+        "qty": 80,
+        "unit_price": 2500.0,
+        "amount": 200000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "d69453c39041a8726ef579e1bf0b5774f5f45e9939128407c00f55c6300c506d": {
+    "invoice_no": "INV-6205",
+    "invoice_date": "2026-10-07",
+    "due_date": "2026-12-06",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Kaveri Retail",
+    "buyer_gstin": "33AAKCK2290Q1Z7",
+    "po_number": "PO-6205",
+    "bank_account": "918020014321",
+    "subtotal": 270000.0,
+    "tax_amount": 48600.0,
+    "amount": 318600.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "HDPE 4-way heavy duty export pallet 1200x1000mm",
+        "hsn": "3923",
+        "qty": 150,
+        "unit_price": 1800.0,
+        "amount": 270000.0
+      }
+    ],
+    "confidence": 0.99
   }
 }

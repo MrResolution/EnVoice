@@ -292,5 +292,250 @@
       "advance_amount": 50150.0,
       "fee_amount": 885.0
     }
+  },
+  {
+    "dataset_id": "DS-6201",
+    "name": "INV-6201 \u00b7 Multi-Item Storage Bins",
+    "buyer": {
+      "name": "Banyan Stores",
+      "upi_id": "banyan@invopay",
+      "gstin": "33AADCB8834E1Z3"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-6201",
+      "po_date": "2026-10-11",
+      "item": "Heavy-duty plastic bin 30L, Modular storage organizer",
+      "hsn": "3923",
+      "qty": 400,
+      "unit_price": 300.0,
+      "subtotal": 150000.0,
+      "tax_amount": 27000.0,
+      "total": 177000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-9201",
+      "qty_delivered": 400,
+      "delivered_on": "2026-10-10"
+    },
+    "invoice": {
+      "invoice_no": "INV-6201",
+      "invoice_date": "2026-10-11",
+      "due_date": "2026-12-10",
+      "files": {
+        "png": "samples/INV-6201.png",
+        "pdf": "samples/INV-6201.pdf"
+      },
+      "subtotal": 150000.0,
+      "tax_amount": 27000.0,
+      "amount": 177000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 150450.0,
+      "fee_amount": 2655.0
+    }
+  },
+  {
+    "dataset_id": "DS-6202",
+    "name": "INV-6202 \u00b7 Industrial Chemical Drums",
+    "buyer": {
+      "name": "Lotus Wholesale",
+      "upi_id": "lotus@invopay",
+      "gstin": "33AAECL6612F1Z1"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-6202",
+      "po_date": "2026-10-10",
+      "item": "200 L industrial chemical drum UN-certified",
+      "hsn": "3923",
+      "qty": 120,
+      "unit_price": 1500.0,
+      "subtotal": 180000.0,
+      "tax_amount": 32400.0,
+      "total": 212400.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-9202",
+      "qty_delivered": 120,
+      "delivered_on": "2026-10-09"
+    },
+    "invoice": {
+      "invoice_no": "INV-6202",
+      "invoice_date": "2026-10-10",
+      "due_date": "2026-12-09",
+      "files": {
+        "png": "samples/INV-6202.png",
+        "pdf": "samples/INV-6202.pdf"
+      },
+      "subtotal": 180000.0,
+      "tax_amount": 32400.0,
+      "amount": 212400.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 180540.0,
+      "fee_amount": 3186.0
+    }
+  },
+  {
+    "dataset_id": "DS-6203",
+    "name": "INV-6203 \u00b7 Food-Grade Harvest Crates",
+    "buyer": {
+      "name": "Newleaf Foods",
+      "upi_id": "newleaf@invopay",
+      "gstin": "33AAFCN3307G1Z8"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-6203",
+      "po_date": "2026-10-09",
+      "item": "Food-grade perforated harvest crate 35L",
+      "hsn": "3923",
+      "qty": 800,
+      "unit_price": 175.0,
+      "subtotal": 140000.0,
+      "tax_amount": 25200.0,
+      "total": 165200.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-9203",
+      "qty_delivered": 800,
+      "delivered_on": "2026-10-08"
+    },
+    "invoice": {
+      "invoice_no": "INV-6203",
+      "invoice_date": "2026-10-09",
+      "due_date": "2026-12-08",
+      "files": {
+        "png": "samples/INV-6203.png",
+        "pdf": "samples/INV-6203.pdf"
+      },
+      "subtotal": 140000.0,
+      "tax_amount": 25200.0,
+      "amount": 165200.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 140420.0,
+      "fee_amount": 2478.0
+    }
+  },
+  {
+    "dataset_id": "DS-6204",
+    "name": "INV-6204 \u00b7 Commercial Steel Display Racks",
+    "buyer": {
+      "name": "Peacock Retail",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Kaveri Traders",
+      "upi_id": "kaveri@invopay",
+      "gstin": "33AAKFK7731M1Z2",
+      "bank_account": "602010057788"
+    },
+    "purchase_order": {
+      "po_number": "PO-6204",
+      "po_date": "2026-10-08",
+      "item": "Heavy-duty 5-shelf powder-coated steel display rack",
+      "hsn": "9403",
+      "qty": 80,
+      "unit_price": 2500.0,
+      "subtotal": 200000.0,
+      "tax_amount": 36000.0,
+      "total": 236000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-9204",
+      "qty_delivered": 80,
+      "delivered_on": "2026-10-07"
+    },
+    "invoice": {
+      "invoice_no": "INV-6204",
+      "invoice_date": "2026-10-08",
+      "due_date": "2026-12-07",
+      "files": {
+        "png": "samples/INV-6204.png",
+        "pdf": "samples/INV-6204.pdf"
+      },
+      "subtotal": 200000.0,
+      "tax_amount": 36000.0,
+      "amount": 236000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 200600.0,
+      "fee_amount": 3540.0
+    }
+  },
+  {
+    "dataset_id": "DS-6205",
+    "name": "INV-6205 \u00b7 Heavy Duty Export Pallets",
+    "buyer": {
+      "name": "Kaveri Retail",
+      "upi_id": "kaveri_retail@invopay",
+      "gstin": "33AAKCK2290Q1Z7"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-6205",
+      "po_date": "2026-10-07",
+      "item": "HDPE 4-way heavy duty export pallet 1200x1000mm",
+      "hsn": "3923",
+      "qty": 150,
+      "unit_price": 1800.0,
+      "subtotal": 270000.0,
+      "tax_amount": 48600.0,
+      "total": 318600.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-9205",
+      "qty_delivered": 150,
+      "delivered_on": "2026-10-06"
+    },
+    "invoice": {
+      "invoice_no": "INV-6205",
+      "invoice_date": "2026-10-07",
+      "due_date": "2026-12-06",
+      "files": {
+        "png": "samples/INV-6205.png",
+        "pdf": "samples/INV-6205.pdf"
+      },
+      "subtotal": 270000.0,
+      "tax_amount": 48600.0,
+      "amount": 318600.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 270810.0,
+      "fee_amount": 4779.0
+    }
   }
 ]
