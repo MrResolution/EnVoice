@@ -16,17 +16,20 @@ const DEMO = [
   ['auditor@invoseal.test', 'Audit desk', 'Auditor'],
 ] as const
 
+const DEMO_PW = (import.meta as any).env?.VITE_DEMO_PASSWORD || 'demo-3DPVGs24EWaOQ3Bf'
+
 export function EmailAuth() {
   const [params] = useSearchParams()
   const [mode, setMode] = useState<'in' | 'up'>('in')
   const lender = params.get('role') === 'lender'
   const paramEmail = params.get('email')
   const [email, setEmail] = useState(paramEmail || (lender ? 'lender@invoseal.test' : ''))
-  const [password, setPassword] = useState('')
+  const isDemo = lender || (paramEmail && paramEmail.endsWith('@invoseal.test'))
+  const [password, setPassword] = useState(isDemo ? DEMO_PW : '')
   const [show, setShow] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [demoOpen, setDemoOpen] = useState(params.get('demo') === '1' || Boolean(paramEmail))
+  const [demoOpen, setDemoOpen] = useState(params.get('demo') === '1' || Boolean(paramEmail) || lender)
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -110,7 +113,7 @@ export function EmailAuth() {
                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={spring} className="overflow-hidden">
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-3">
                     {DEMO.map(([e, who, role]) => (
-                      <button type="button" key={e} onClick={() => { setEmail(e); setMode('in') }}
+                      <button type="button" key={e} onClick={() => { setEmail(e); setPassword(DEMO_PW); setMode('in') }}
                         className={`rounded-xl p-2.5 text-left transition border ${email === e ? 'bg-ink text-white border-ink' : 'bg-white border-line hover:border-ink-3'}`}>
                         <span className="block text-xs font-bold truncate">{who}</span>
                         <span className={`block text-[11px] ${email === e ? 'text-lime' : 'text-muted'}`}>{role}</span>
