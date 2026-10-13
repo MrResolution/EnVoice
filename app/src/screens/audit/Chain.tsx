@@ -8,7 +8,6 @@ import type { AuditRow } from '../../lib/data'
 import { Icon, Rings } from '../../ui/Icon'
 import { Badge, Btn, Card, Empty, ErrorNote, Skeleton } from '../../ui/kit'
 import { buzz, Page, soft, Stagger, StaggerItem } from '../../ui/motion'
-import { DeskShell } from '../../ui/DeskShell'
 
 type Problem = { kind: string; seq?: number; invoice_id?: string; message: string }
 type Batch = { batch_no: number; from_seq: number; to_seq: number; leaf_count: number; merkle_root: string; recomputed_root: string | null; matches_db: boolean; tx_hash: string; contract_address: string; block_number: number }
@@ -46,7 +45,7 @@ export function Chain() {
   const bad = new Set(report?.problems.map((p) => p.seq).filter(Boolean))
   const head = entries?.[0]
   return (
-    <DeskShell>
+    <>
       <Page className="mx-auto max-w-[1200px] space-y-4">
         <div><h1 className="text-2xl font-extrabold">Audit chain</h1><p className="text-[13px] text-muted">Every step is hash-linked to the one before; batch roots are anchored on a blockchain.</p></div>
         <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1fr)_420px]">
@@ -115,6 +114,6 @@ export function Chain() {
           </Card>
         </div>
       </Page>
-    </DeskShell>
+    </>
   )
 }

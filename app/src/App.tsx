@@ -1,10 +1,9 @@
-import { useState } from 'react'
-import { Navigate, Outlet, Route, Routes, useLocation, useOutlet } from 'react-router'
-import { AnimatePresence, motion } from 'motion/react'
+import { Navigate, Outlet, Route, Routes } from 'react-router'
+import { motion } from 'motion/react'
 import { HOME, useAuth, type Role } from './lib/auth'
 import { configured } from './lib/supabase'
 import { LogoMark } from './ui/kit'
-import { MobileShell } from './ui/MobileShell'
+import { RoleShell } from './ui/RoleShell'
 import { Welcome } from './screens/auth/Welcome'
 import { EmailAuth } from './screens/auth/EmailAuth'
 import { Onboarding } from './screens/auth/Onboarding'
@@ -18,21 +17,6 @@ import { InvoiceScreen } from './screens/InvoiceScreen'
 import { Profile } from './screens/Profile'
 import { LenderDashboard, LenderInvoice, Portfolio } from './screens/lender/Dashboard'
 import { Chain } from './screens/audit/Chain'
-
-/** Keeps the old screen on stage while it animates out (the outlet would otherwise switch instantly). */
-function Frozen() {
-  const o = useOutlet()
-  const [frozen] = useState(o)
-  return frozen
-}
-function AnimatedOutlet() {
-  const loc = useLocation()
-  return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div key={loc.pathname} exit={{ opacity: 0, transition: { duration: 0.12 } }}><Frozen /></motion.div>
-    </AnimatePresence>
-  )
-}
 
 /** Routing is a convenience: RLS and the edge functions enforce every role on the server. */
 function Only({ roles }: { roles: Role[] }) {
@@ -68,8 +52,8 @@ export function App() {
 
   return (
     <Routes>
-      <Route element={<Only roles={['supplier']} />}>
-        <Route element={<MobileShell role="supplier"><AnimatedOutlet /></MobileShell>}>
+      <Route element={<RoleShell />}>
+        <Route element={<Only roles={['supplier']} />}>
           <Route path="/s" element={<SellerHome />} />
           <Route path="/s/invoices" element={<SellerInvoices />} />
           <Route path="/s/upload" element={<Upload />} />
@@ -78,9 +62,7 @@ export function App() {
           <Route path="/s/payouts" element={<Payouts />} />
           <Route path="/s/profile" element={<Profile />} />
         </Route>
-      </Route>
-      <Route element={<Only roles={['buyer']} />}>
-        <Route element={<MobileShell role="buyer"><AnimatedOutlet /></MobileShell>}>
+        <Route element={<Only roles={['buyer']} />}>
           <Route path="/b" element={<BuyerHome />} />
           <Route path="/b/invoices" element={<BuyerInvoices />} />
           <Route path="/b/invoice/:id" element={<InvoiceScreen />} />
@@ -88,18 +70,21 @@ export function App() {
           <Route path="/b/orders/new" element={<NewPO />} />
           <Route path="/b/profile" element={<Profile />} />
         </Route>
-      </Route>
-      <Route element={<Only roles={['lender']} />}>
-        <Route path="/l" element={<LenderDashboard />} />
-        <Route path="/l/portfolio" element={<Portfolio />} />
-        <Route path="/l/chain" element={<Chain />} />
-      </Route>
-      <Route element={<Only roles={['lender', 'auditor']} />}>
-        <Route path="/l/invoice/:id" element={<LenderInvoice />} />
-      </Route>
-      <Route element={<Only roles={['auditor']} />}>
-        <Route path="/a" element={<Chain />} />
-        <Route path="/a/invoices" element={<LenderDashboard />} />
+        <Route element={<Only roles={['lender']} />}>
+          <Route path="/l" element={<LenderDashboard />} />
+          <Route path="/l/all" element={<LenderDashboard />} />
+          <Route path="/l/portfolio" element={<Portfolio />} />
+          <Route path="/l/chain" element={<Chain />} />
+          <Route path="/l/profile" element={<Profile />} />
+        </Route>
+        <Route element={<Only roles={['lender', 'auditor']} />}>
+          <Route path="/l/invoice/:id" element={<LenderInvoice />} />
+        </Route>
+        <Route element={<Only roles={['auditor']} />}>
+          <Route path="/a" element={<Chain />} />
+          <Route path="/a/invoices" element={<LenderDashboard />} />
+          <Route path="/a/profile" element={<Profile />} />
+        </Route>
       </Route>
       <Route path="*" element={<Navigate to={HOME[profile.role]} replace />} />
     </Routes>

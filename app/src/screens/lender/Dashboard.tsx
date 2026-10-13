@@ -9,7 +9,6 @@ import { DocumentView } from '../../components/DocumentView'
 import { Icon, Rings } from '../../ui/Icon'
 import { Badge, Btn, Card, DarkCard, Empty, ErrorNote, Skeleton, toneOf } from '../../ui/kit'
 import { CountUp, Page, soft, spring, useToast } from '../../ui/motion'
-import { DeskShell } from '../../ui/DeskShell'
 import { AuditList, ChecksList, MatchTable, RiskBars, RiskRing, StatusBadge, Steps, useInvoiceDetail } from '../../ui/invoice'
 
 const FILTERS: [string, string, (r: InvoiceRow) => boolean][] = [
@@ -43,7 +42,7 @@ export function LenderDashboard() {
   const open = (id: string) => (window.matchMedia('(min-width: 1280px)').matches ? setSel(id) : nav(`/l/invoice/${id}`))
 
   return (
-    <DeskShell badge={count('review')}>
+    <>
       <Page className="mx-auto max-w-[1400px] space-y-5">
         <header className="flex flex-wrap items-center gap-3">
           <div className="flex-1"><div className="text-xl">Hello, <b>{profile?.full_name?.split(' ')[0]}</b></div><div className="text-[13px] text-muted">Lender · {new Date().toLocaleDateString('en-IN', { dateStyle: 'medium' })}</div></div>
@@ -102,7 +101,7 @@ export function LenderDashboard() {
           <AnimatePresence mode="wait">{sel && <SidePanel key={sel} id={sel} />}</AnimatePresence>
         </div>
       </Page>
-    </DeskShell>
+    </>
   )
 }
 
@@ -161,7 +160,7 @@ export function LenderInvoice() {
   const { d, reload } = useInvoiceDetail(id)
   const back = profile?.role === 'auditor' ? '/a/invoices' : '/l'
   return (
-    <DeskShell>
+    <>
       <Page className="mx-auto max-w-[1200px] space-y-4">
         <Link to={back} className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold"><Icon name="back" size={18} />Back to the queue</Link>
         {d === false ? <Empty icon="shield" title="Not visible to this account" /> : !d ? <Skeleton className="h-96" /> : (
@@ -188,7 +187,7 @@ export function LenderInvoice() {
           </>
         )}
       </Page>
-    </DeskShell>
+    </>
   )
 }
 
@@ -204,7 +203,7 @@ export function Portfolio() {
   const total = [...byBuyer.values()].reduce((s, v) => s + v, 0)
   const fees = (offers ?? []).reduce((s, o) => s + o.fee_amount, 0)
   return (
-    <DeskShell>
+    <>
       <Page className="mx-auto max-w-[1200px] space-y-4">
         <h1 className="text-2xl font-extrabold">Portfolio</h1>
         <div className="grid gap-3 sm:grid-cols-3">
@@ -227,6 +226,6 @@ export function Portfolio() {
           )}
         </Card>
       </Page>
-    </DeskShell>
+    </>
   )
 }
