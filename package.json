@@ -8,6 +8,7 @@
     "test:ui": "npm --prefix app test",
     "test:all": "npm test && npm --prefix app test && npm --prefix app run typecheck",
     "test:rls": "vitest run tests/rls",
+    "ocr:serve": "python3 tools/ocr-service/server.py",
     "seed": "node tools/gen-seed.ts",
     "e2e": "node tools/e2e.ts",
     "deploy:web": "npm --prefix app run build && rm -rf deploy/invoseal/assets && cp -R app/dist/. deploy/invoseal/ && cd deploy/invoseal && npx -y vercel@latest deploy --prod --yes",
