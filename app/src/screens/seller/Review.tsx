@@ -39,6 +39,8 @@ export function Review() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const [pos, setPos] = useState<any[]>([])
+
   useEffect(() => {
     supabase.from('invoices').select('*').eq('id', id!).maybeSingle().then(({ data }) => {
       if (!data) return setError('Invoice not found.')
@@ -49,7 +51,44 @@ export function Review() {
       setLines((row.line_items ?? []).map((l) => ({ description: l.description, hsn: str(l.hsn), qty: str(l.qty), unit_price: str(l.unit_price), amount: str(l.amount) })))
     })
     parties(true).then((m) => setBuyers([...m.values()].filter((p) => p.type === 'buyer')))
+    supabase.from('purchase_orders').select('*').order('created_at', { ascending: false }).then(({ data }) => {
+      if (data) setPos(data)
+    })
   }, [id, nav])
+
+  function matchPO(po: any) {
+    setBuyerId(po.buyer_id)
+    const matchingBuyer = buyers.find((b) => b.id === po.buyer_id)
+    const subtotal = po.unit_price ? Math.round(po.qty * po.unit_price) : Math.round(po.total / 1.18)
+    const tax_amount = Math.round(po.total - subtotal)
+    const poNumDigits = (po.po_number || '').replace(/\D/g, '') || '1001'
+    const today = new Date().toISOString().split('T')[0]
+    const due = new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0]
+
+    setForm((prev) => ({
+      ...prev!,
+      buyer_name: matchingBuyer?.name ?? 'Peacock Retail',
+      po_number: po.po_number,
+      invoice_no: prev?.invoice_no ? prev.invoice_no : `INV-${poNumDigits}`,
+      invoice_date: prev?.invoice_date ? prev.invoice_date : today,
+      due_date: prev?.due_date ? prev.due_date : due,
+      subtotal: String(subtotal),
+      tax_amount: String(tax_amount),
+      amount: String(po.total),
+      currency: 'INR',
+    }))
+
+    setLines([
+      {
+        description: po.item || 'Goods',
+        hsn: String(po.hsn || '3924'),
+        qty: String(po.qty || 100),
+        unit_price: String(po.unit_price || 200),
+        amount: String(subtotal),
+      },
+    ])
+    buzz(15)
+  }
 
   const ai = inv?.ai_fields as Record<string, unknown> | null
   const edited = (k: Key) => Boolean(ai) && inv?.ai_source !== 'manual' && norm(ai![k]) !== norm(form?.[k]) && !(Number(ai![k]) === Number(norm(form?.[k])) && norm(form?.[k]) !== '')
@@ -131,6 +170,40 @@ export function Review() {
                 <span className="block text-[11px] text-soft">Total invoice payable</span>
               </div>
             </div>
+          )}
+
+          {/* Quick Auto-Match from Open Purchase Orders */}
+          {pos.length > 0 && (
+            <Card className="p-4 border-2 border-lime/30 bg-lime/5">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="flex items-center gap-1.5 text-xs font-bold text-ink">
+                  <Icon name="sparkle" size={14} />
+                  Match with Purchase Order
+                </span>
+                <span className="text-[11px] text-muted font-medium">1-tap auto-fill</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {pos.map((p) => {
+                  const active = form.po_number === p.po_number
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => matchPO(p)}
+                      className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-sm ${
+                        active
+                          ? 'bg-ink text-white ring-2 ring-lime'
+                          : 'bg-white border border-line text-ink hover:border-ink'
+                      }`}
+                    >
+                      <span>{p.po_number}</span>
+                      <span className="text-[10px] opacity-70">({inr(p.total)})</span>
+                      {active && <span className="text-lime">✓</span>}
+                    </button>
+                  )
+                })}
+              </div>
+            </Card>
           )}
 
           {/* Form Fields Card */}

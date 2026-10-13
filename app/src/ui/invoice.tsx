@@ -111,10 +111,11 @@ export function MatchTable({ checks }: { checks: CheckRow[] }) {
   )
 }
 
-export function Dot({ status }: { status: 'pass' | 'warn' | 'fail' }) {
+export function Dot({ status = 'pass' }: { status?: 'pass' | 'warn' | 'fail' | string }) {
+  const s = status === 'warn' ? 'warn' : status === 'fail' ? 'fail' : 'pass'
   return (
-    <span aria-label={status} className={cx('inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full', status === 'pass' ? 'bg-ok-soft text-ok' : status === 'warn' ? 'bg-warn-soft text-warn' : 'bg-bad-soft text-bad')}>
-      <Icon name={status === 'pass' ? 'check' : status === 'warn' ? 'alert' : 'x'} size={13} width={3} />
+    <span aria-label={s} className={cx('inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full', s === 'pass' ? 'bg-ok-soft text-ok' : s === 'warn' ? 'bg-warn-soft text-warn' : 'bg-bad-soft text-bad')}>
+      <Icon name={s === 'pass' ? 'check' : s === 'warn' ? 'alert' : 'x'} size={11} width={3} />
     </span>
   )
 }

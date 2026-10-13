@@ -148,5 +148,130 @@
       }
     ],
     "confidence": 0.99
+  },
+  "1e713f38a29a273f9dc011b0e166bc93a83b436705293f446619dae247ac7dd2": {
+    "invoice_no": "INV-5101",
+    "invoice_date": "2026-10-11",
+    "due_date": "2026-12-10",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-5101",
+    "bank_account": "918020014321",
+    "subtotal": 100000.0,
+    "tax_amount": 18000.0,
+    "amount": 118000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "20 L plastic bucket with lid",
+        "hsn": "3924",
+        "qty": 500,
+        "unit_price": 200.0,
+        "amount": 100000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "bcb90cd203b21e7894f959c391df7900d95ba80e63e2572f921626f67c379091": {
+    "invoice_no": "INV-5102",
+    "invoice_date": "2026-10-11",
+    "due_date": "2026-12-10",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-5102",
+    "bank_account": "918020014321",
+    "subtotal": 100000.0,
+    "tax_amount": 18000.0,
+    "amount": 118000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "50 L industrial storage drum",
+        "hsn": "3923",
+        "qty": 200,
+        "unit_price": 500.0,
+        "amount": 100000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "18e9019747d4455c3a0c9ff7b5a11dc74df4f431e0d8183c1c331b0c267e9f40": {
+    "invoice_no": "INV-5103",
+    "invoice_date": "2026-10-10",
+    "due_date": "2026-12-09",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-5103",
+    "bank_account": "918020014321",
+    "subtotal": 100000.0,
+    "tax_amount": 18000.0,
+    "amount": 118000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "12 L pedal dustbin",
+        "hsn": "3924",
+        "qty": 400,
+        "unit_price": 250.0,
+        "amount": 100000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "7af8e7dd7068cbb21fcdeb2de58d85a272f5ee2732fa0a68cbc96872132f547b": {
+    "invoice_no": "INV-5104",
+    "invoice_date": "2026-10-09",
+    "due_date": "2026-12-08",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-5104",
+    "bank_account": "918020014321",
+    "subtotal": 120000.0,
+    "tax_amount": 21600.0,
+    "amount": 141600.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "Heavy-duty plastic crate 40L",
+        "hsn": "3923",
+        "qty": 300,
+        "unit_price": 400.0,
+        "amount": 120000.0
+      }
+    ],
+    "confidence": 0.99
+  },
+  "d553058efe068f8e48d904d7fbdcd9bad666cf217061d2626b41d5af3f155ab1": {
+    "invoice_no": "INV-5105",
+    "invoice_date": "2026-10-08",
+    "due_date": "2026-12-07",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-5105",
+    "bank_account": "918020014321",
+    "subtotal": 90000.0,
+    "tax_amount": 16200.0,
+    "amount": 106200.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "10 L water dispenser container",
+        "hsn": "3923",
+        "qty": 600,
+        "unit_price": 150.0,
+        "amount": 90000.0
+      }
+    ],
+    "confidence": 0.99
   }
 }

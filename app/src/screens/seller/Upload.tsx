@@ -14,6 +14,11 @@ const EXT: Record<string, string> = { 'application/pdf': 'pdf', 'image/png': 'pn
 // The demo samples ship with the build byte-for-byte (same SHA-256 as samples/). Each belongs to one seller.
 const SAMPLES = [
   ['S1-clean.png', 'S1 · clean invoice', 'Peacock Retail · ₹2,40,000', 'Ravi Plastics'],
+  ['INV-5101.png', 'INV-5101 · 20L Buckets', 'Peacock Retail · ₹1,18,000', 'Ravi Plastics'],
+  ['INV-5102.png', 'INV-5102 · Storage Drums', 'Peacock Retail · ₹1,18,000', 'Ravi Plastics'],
+  ['INV-5103.png', 'INV-5103 · Pedal Dustbins', 'Peacock Retail · ₹1,18,000', 'Ravi Plastics'],
+  ['INV-5104.png', 'INV-5104 · Plastic Crates', 'Peacock Retail · ₹1,41,600', 'Ravi Plastics'],
+  ['INV-5105.png', 'INV-5105 · Water Containers', 'Peacock Retail · ₹1,06,200', 'Ravi Plastics'],
   ['S2-duplicate.png', 'S2 · exact copy of S1', 'should be blocked', 'Ravi Plastics'],
   ['S3-mismatch.png', 'S3 · 100 billed, 80 delivered', 'Banyan Stores · ₹59,000', 'Ravi Plastics'],
   ['S5-tamper-target.png', 'S5 · clean invoice', 'Banyan Stores · ₹88,500', 'Ravi Plastics'],
@@ -60,6 +65,44 @@ export function Upload() {
     const res = await fetch(`./samples/${name}`)
     if (!res.ok) return setError('Sample files are not in this build.')
     send(new File([await res.blob()], name, { type: 'image/png' }))
+  }
+
+  async function createManual() {
+    setError(null)
+    try {
+      setStep('preparing')
+      const canvas = document.createElement('canvas')
+      canvas.width = 800
+      canvas.height = 1000
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, 800, 1000)
+        ctx.fillStyle = '#142133'
+        ctx.font = 'bold 36px sans-serif'
+        ctx.fillText('TAX INVOICE', 60, 90)
+        ctx.fillStyle = '#626e80'
+        ctx.font = '20px sans-serif'
+        ctx.fillText(`Created by ${profile?.party_name ?? 'Supplier'}`, 60, 135)
+        ctx.fillText(`Date: ${new Date().toLocaleDateString('en-IN')}`, 60, 170)
+        ctx.strokeStyle = '#cdd4de'
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(60, 200)
+        ctx.lineTo(740, 200)
+        ctx.stroke()
+        ctx.fillStyle = '#142133'
+        ctx.font = '16px monospace'
+        ctx.fillText('Digital entry created via Invoseal', 60, 240)
+      }
+      const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
+      if (!blob) throw new Error('Could not generate document.')
+      const file = new File([blob], `invoice-${Date.now()}.png`, { type: 'image/png' })
+      await send(file)
+    } catch (e) {
+      setError((e as Error).message)
+      setStep('idle')
+    }
   }
 
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) send(f) }
@@ -115,9 +158,15 @@ export function Upload() {
                 </span>
                 <span className="text-lg font-bold text-ink">Drag and drop your invoice here, or browse</span>
                 <span className="mt-1 text-xs text-muted">Supports PDF, PNG, JPEG or WebP (up to 5 MB)</span>
-                <span className="mt-4 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-white hover:bg-ink-2 transition">
-                  Choose file from laptop
-                </span>
+                <div className="mt-4 flex items-center gap-3">
+                  <span className="rounded-xl bg-ink px-4 py-2 text-xs font-bold text-white hover:bg-ink-2 transition">
+                    Choose file from laptop
+                  </span>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); createManual() }}
+                    className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-4 py-2 text-xs font-bold text-ink hover:bg-ground transition shadow-sm">
+                    <Icon name="plus" size={14} /> Enter manually
+                  </button>
+                </div>
               </div>
 
               <div className="flex items-center gap-2.5 rounded-2xl bg-white border border-line px-4 py-3 text-xs text-muted">
@@ -139,6 +188,10 @@ export function Upload() {
               <motion.button whileTap={{ scale: 0.98 }} onClick={() => picker.current?.click()} className="flex w-full items-center gap-4 rounded-[28px] bg-white p-5 text-left">
                 <span className="flex h-14 w-14 items-center justify-center rounded-full bg-ground"><Icon name="file" size={26} /></span>
                 <span><span className="block text-lg font-bold">Choose a file</span><span className="block text-sm text-muted">PDF, JPEG, PNG or WebP</span></span>
+              </motion.button>
+              <motion.button whileTap={{ scale: 0.98 }} onClick={createManual} className="flex w-full items-center gap-4 rounded-[28px] border-2 border-dashed border-ink/20 bg-ground/50 p-5 text-left hover:border-ink hover:bg-white transition">
+                <span className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm text-ink"><Icon name="plus" size={26} /></span>
+                <span><span className="block text-lg font-bold">Create manually</span><span className="block text-sm text-muted">Type fields or auto-match from Purchase Order</span></span>
               </motion.button>
               <p className="flex items-start gap-2 px-1 text-xs leading-relaxed text-muted"><Icon name="shield" size={16} className="mt-0.5 shrink-0" />Private: only you, the buyer on the invoice and the lender can open it. Its SHA-256 fingerprint goes into the audit chain.</p>
             </motion.div>
