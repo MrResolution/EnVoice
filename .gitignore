@@ -22,6 +22,8 @@ tools/.venv/
 # OS / editor
 .DS_Store
 *.log
+.claude/
+**/__pycache__/
 
 # sample images copied into the web build
 app/public/samples/

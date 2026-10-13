@@ -1,4 +1,5 @@
 import { useAuth } from '../lib/auth'
+import { useDesktop } from '../lib/layout'
 import { Icon } from '../ui/Icon'
 import { Btn, Card, DarkCard } from '../ui/kit'
 import { Page } from '../ui/motion'
@@ -6,28 +7,50 @@ import { TopBar } from '../ui/MobileShell'
 
 export function Profile() {
   const { profile, session, signOut } = useAuth()
-  const role = profile?.role === 'buyer' ? 'Buyer' : 'Seller'
+  const desktop = useDesktop()
+  const role = profile?.role === 'buyer' ? 'Buyer' : profile?.role === 'lender' ? 'Lender' : profile?.role === 'auditor' ? 'Auditor' : 'Seller'
   const row = (label: string, value: string) => (
-    <div className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line py-2 last:border-0"><span className="text-sm text-muted">{label}</span><span className="text-right text-[15px] font-semibold">{value}</span></div>
+    <div className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line py-2.5 last:border-0">
+      <span className="text-xs font-semibold text-muted">{label}</span>
+      <span className="text-right text-sm font-bold text-ink">{value}</span>
+    </div>
   )
+
   return (
-    <Page>
-      <TopBar title="Profile" />
-      <div className="space-y-3 px-[18px]">
-        <DarkCard className="flex items-center gap-4 p-5">
-          <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-lime text-lg font-extrabold text-ink">{(profile?.party_name ?? '?').slice(0, 2).toUpperCase()}</span>
-          <div><div className="text-xl font-bold">{profile?.party_name}</div><div className="text-sm text-soft">{role} account{profile?.city ? ` · ${profile.city}` : ''}</div></div>
+    <Page className="space-y-5">
+      <TopBar title="Account profile" subtitle="Your registered organization and access details" />
+      <div className={desktop ? 'max-w-3xl space-y-4' : 'space-y-3 px-[18px]'}>
+        <DarkCard className="flex items-center gap-4 p-6" ringsAt="-right-10 -bottom-10 h-36 w-36">
+          <span className="flex h-16 w-16 items-center justify-center rounded-2xl bg-lime text-xl font-extrabold text-ink">
+            {(profile?.party_name ?? profile?.full_name ?? '?').slice(0, 2).toUpperCase()}
+          </span>
+          <div>
+            <div className="text-2xl font-extrabold text-white">{profile?.party_name ?? profile?.full_name}</div>
+            <div className="text-xs text-soft font-semibold">{role} account {profile?.city ? `· ${profile.city}` : ''}</div>
+          </div>
         </DarkCard>
-        <Card className="px-4 py-1">
-          {row('Name', profile?.full_name ?? '—')}
-          {row('Signed in as', session?.user.email ?? '—')}
-          {row('Sign-in method', session?.user.app_metadata?.provider === 'google' ? 'Google' : 'Email')}
+
+        <Card className="px-5 py-2 border border-line">
+          {row('Organization name', profile?.party_name ?? '—')}
+          {row('Contact name', profile?.full_name ?? '—')}
+          {row('City / Region', profile?.city ?? '—')}
+          {row('Email address', session?.user.email ?? '—')}
+          {row('Role authorization', `${role} Portal`)}
+          {row('Authentication method', session?.user.app_metadata?.provider === 'google' ? 'Google OAuth 2.0' : 'Email / Password')}
         </Card>
-        <Card className="flex gap-3 text-[13px] leading-relaxed text-ink-3">
-          <Icon name="shield" size={20} className="mt-0.5 shrink-0" />
-          <span>Prototype for the SYNESIS 26 hackathon: mock data only, no real money moves, not a licensed lender. Your documents stay private; only hashes go into the audit chain.</span>
+
+        <Card className="flex gap-3 text-xs leading-relaxed text-muted border border-line p-4">
+          <Icon name="shield" size={18} className="mt-0.5 shrink-0 text-ink" />
+          <span>
+            <b>SYNESIS 26 Hackathon Prototype:</b> Mock data and transactions only. No real banking transfers or live lending licenses are represented. All original invoice documents are encrypted in private storage; only cryptographic SHA-256 hashes are recorded on the audit trail.
+          </span>
         </Card>
-        <Btn kind="light" icon="logout" className="w-full" onClick={signOut}>Sign out</Btn>
+
+        <div className="pt-2">
+          <Btn kind="danger" icon="logout" className="w-full sm:w-auto" onClick={signOut}>
+            Sign out of {profile?.party_name || 'Invoseal'}
+          </Btn>
+        </div>
       </div>
     </Page>
   )

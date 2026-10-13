@@ -5,6 +5,7 @@ import { inr } from '@shared/normalize.ts'
 import { short } from '@shared/canon.ts'
 import { call, supabase } from '../../lib/supabase'
 import { parties, toInvoice, type InvoiceRow, type Party } from '../../lib/data'
+import { useDesktop } from '../../lib/layout'
 import { DocThumb, DocumentView } from '../../components/DocumentView'
 import { Icon, Rings } from '../../ui/Icon'
 import { Avatar, Badge, Btn, Card, ErrorNote, RoundBtn, Skeleton } from '../../ui/kit'
@@ -21,11 +22,12 @@ const FIELDS = [
 type Key = (typeof FIELDS)[number][0]
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
 const norm = (v: unknown) => str(v).replace(/[,\s₹]/g, '').toLowerCase()
-const SOURCE = { gemini: 'Read by Gemini', cache: 'Cached AI result', reuse: 'Read before', manual: 'Type the fields' }
+const SOURCE = { gemini: 'Read by Gemini AI', cache: 'Cached AI result', reuse: 'Read before', manual: 'Type the fields' }
 
 export function Review() {
   const { id } = useParams()
   const nav = useNavigate()
+  const desktop = useDesktop()
   const note = (useLocation().state as { note?: string } | null)?.note
   const [inv, setInv] = useState<InvoiceRow | null>(null)
   const [form, setForm] = useState<Record<Key, string> | null>(null)
@@ -65,74 +67,161 @@ export function Review() {
     } catch (err) { setError((err as Error).message); setBusy(false) }
   }
 
-  if (!inv || !form) return <Page><TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Check the fields" /><div className="space-y-3 px-[18px]">{error ? <ErrorNote>{error}</ErrorNote> : <><Skeleton className="h-32" /><Skeleton className="h-96" /></>}</div></Page>
+  if (!inv || !form) {
+    return (
+      <Page>
+        <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Check extracted fields" />
+        <div className="space-y-3 px-[18px]">
+          {error ? <ErrorNote>{error}</ErrorNote> : <><Skeleton className="h-32" /><Skeleton className="h-96" /></>}
+        </div>
+      </Page>
+    )
+  }
+
   const pct = inv.ai_confidence !== null ? Math.round(inv.ai_confidence * 100) : null
 
   return (
-    <Page>
-      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Check the fields" subtitle={inv.ai_source === 'manual' ? 'type what the document says' : 'AI read, you confirm'} />
-      <form onSubmit={submit} className="space-y-3 px-[18px]">
-        {note && <div role="status" className="rounded-2xl bg-warn-soft px-4 py-3 text-sm font-medium text-warn">{note}</div>}
-        <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={() => setSheet('doc')} className="relative flex w-full items-center gap-4 overflow-hidden rounded-[24px] bg-ink p-3.5 text-left text-white">
-          <Rings className="-bottom-12 -right-10 h-32 w-32" />
-          <DocThumb path={inv.file_path} type={inv.file_type} />
-          <span className="relative flex-1">
-            <Badge tone={inv.ai_source === 'manual' || (pct !== null && pct < 80) ? 'warn' : 'lime'}>{SOURCE[inv.ai_source]}{pct !== null && inv.ai_source !== 'manual' ? ` · ${pct}% sure` : ''}</Badge>
-            <span className="mt-2 block text-[26px] font-bold">{form.amount ? inr(Number(norm(form.amount))) : '₹ —'}</span>
-            <span className="block text-xs text-soft">total · fingerprint {short(inv.file_hash)} · tap to view</span>
-          </span>
-        </motion.button>
+    <Page className="space-y-5">
+      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Verify invoice fields" subtitle={inv.ai_source === 'manual' ? 'Enter document fields manually' : 'AI extracted fields automatically · Please confirm details before running checks'} />
 
-        <Card className="px-4 py-1">
-          {FIELDS.map(([k, label, kind]) => (
-            <label key={k} className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line py-2 last:border-0">
-              <span className="flex items-center gap-1.5 text-sm text-muted">{label}{edited(k) && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-2 w-2 rounded-full bg-warn" aria-label="edited" />}</span>
-              <input value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} type={kind === 'date' ? 'date' : 'text'} inputMode={kind === 'money' ? 'decimal' : undefined}
-                className="min-w-0 flex-1 bg-transparent text-right text-[15px] font-semibold outline-none placeholder:text-soft" placeholder="—" />
-            </label>
-          ))}
-        </Card>
+      {note && <div role="status" className="rounded-2xl bg-warn-soft px-4 py-3 text-sm font-medium text-warn">{note}</div>}
 
-        <Card>
-          <div className="mb-2 flex items-center justify-between"><span className="text-[15px] font-bold">Items</span><button type="button" onClick={() => setLines([...lines, { description: '', hsn: '', qty: '', unit_price: '', amount: '' }])} className="min-h-11 rounded-xl px-2 text-sm font-semibold">+ Add line</button></div>
-          {lines.length === 0 && <p className="text-sm text-muted">No lines read. Add the items from the invoice.</p>}
-          {lines.map((l, i) => (
-            <div key={i} className="mb-2 grid grid-cols-6 gap-2 rounded-2xl bg-ground p-2.5">
-              <input aria-label="Description" placeholder="Item" value={l.description} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} className="col-span-5 min-h-11 rounded-xl bg-white px-3 text-sm font-semibold outline-none" />
-              <button type="button" aria-label="Remove line" onClick={() => setLines(lines.filter((_, j) => j !== i))} className="flex min-h-11 items-center justify-center rounded-xl bg-white text-bad"><Icon name="x" size={16} /></button>
-              {(['qty', 'unit_price', 'amount'] as const).map((f) => (
-                <input key={f} aria-label={f} placeholder={f === 'qty' ? 'Qty' : f === 'unit_price' ? 'Unit ₹' : 'Amount ₹'} inputMode="decimal" value={l[f]}
-                  onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, [f]: e.target.value } : x)))} className="col-span-2 min-h-11 min-w-0 rounded-xl bg-white px-3 text-sm outline-none" />
+      <form onSubmit={submit} className={desktop ? 'grid grid-cols-1 lg:grid-cols-12 gap-6 items-start' : 'space-y-3 px-[18px]'}>
+        {/* LEFT COLUMN: Document Preview on Desktop */}
+        {desktop && (
+          <div className="lg:col-span-5 sticky top-6 space-y-4">
+            <Card className="p-4 border border-line">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-bold text-ink">Original invoice</span>
+                <span className="text-xs text-muted font-mono">SHA-256: {short(inv.file_hash)}</span>
+              </div>
+              <div className="max-h-[75vh] overflow-y-auto thin-scroll rounded-xl bg-ground/50 p-2 border border-line">
+                <DocumentView path={inv.file_path} type={inv.file_type} />
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {/* RIGHT COLUMN: Extracted Fields & Controls */}
+        <div className={desktop ? 'lg:col-span-7 space-y-4' : 'space-y-3'}>
+          {/* Mobile Document Button */}
+          {!desktop && (
+            <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={() => setSheet('doc')} className="relative flex w-full items-center gap-4 overflow-hidden rounded-[24px] bg-ink p-3.5 text-left text-white">
+              <Rings className="-bottom-12 -right-10 h-32 w-32" />
+              <DocThumb path={inv.file_path} type={inv.file_type} />
+              <span className="relative flex-1">
+                <Badge tone={inv.ai_source === 'manual' || (pct !== null && pct < 80) ? 'warn' : 'lime'}>{SOURCE[inv.ai_source]}{pct !== null && inv.ai_source !== 'manual' ? ` · ${pct}% confidence` : ''}</Badge>
+                <span className="mt-2 block text-[26px] font-bold">{form.amount ? inr(Number(norm(form.amount))) : '₹ —'}</span>
+                <span className="block text-xs text-soft">total · fingerprint {short(inv.file_hash)} · tap to view</span>
+              </span>
+            </motion.button>
+          )}
+
+          {/* AI Banner for Desktop */}
+          {desktop && (
+            <div className="flex items-center justify-between rounded-2xl bg-ink p-4 text-white">
+              <div>
+                <Badge tone={inv.ai_source === 'manual' || (pct !== null && pct < 80) ? 'warn' : 'lime'}>
+                  {SOURCE[inv.ai_source]} {pct !== null && inv.ai_source !== 'manual' ? `(${pct}% confidence)` : ''}
+                </Badge>
+                <div className="mt-1 text-xs text-soft">Review values below against the document on the left.</div>
+              </div>
+              <div className="text-right">
+                <span className="block text-2xl font-extrabold text-lime">{form.amount ? inr(Number(norm(form.amount))) : '₹ —'}</span>
+                <span className="block text-[11px] text-soft">Total invoice payable</span>
+              </div>
+            </div>
+          )}
+
+          {/* Form Fields Card */}
+          <Card className="px-5 py-2 border border-line">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6">
+              {FIELDS.map(([k, label, kind]) => (
+                <label key={k} className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line py-2.5">
+                  <span className="flex items-center gap-1.5 text-xs font-semibold text-muted">
+                    {label}
+                    {edited(k) && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-2 w-2 rounded-full bg-warn" aria-label="edited by user" />}
+                  </span>
+                  <input value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} type={kind === 'date' ? 'date' : 'text'} inputMode={kind === 'money' ? 'decimal' : undefined}
+                    className="min-w-0 flex-1 bg-transparent text-right text-sm font-bold text-ink outline-none placeholder:text-soft" placeholder="—" />
+                </label>
               ))}
             </div>
-          ))}
-        </Card>
+          </Card>
 
-        <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={() => setSheet('buyer')} className="flex w-full items-center gap-3 rounded-[22px] bg-white p-3.5 text-left">
-          {buyer ? <Avatar name={buyer.name} dark /> : <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-warn-soft text-warn"><Icon name="building" /></span>}
-          <span className="flex-1"><span className="block text-xs text-muted">{buyer ? (inv.buyer_id === buyerId ? 'Buyer · matched from the invoice' : 'Buyer') : 'Choose the buyer'}</span><span className="block text-[15px] font-bold">{buyer?.name ?? 'Who pays this invoice?'}</span></span>
-          <span className="text-[13px] font-semibold text-muted">Change</span>
-        </motion.button>
+          {/* Line Items Card */}
+          <Card className="p-5 border border-line">
+            <div className="mb-3 flex items-center justify-between">
+              <div>
+                <span className="text-sm font-bold text-ink">Line items</span>
+                <span className="ml-2 text-xs text-muted">({lines.length} items)</span>
+              </div>
+              <button type="button" onClick={() => setLines([...lines, { description: '', hsn: '', qty: '', unit_price: '', amount: '' }])} className="rounded-xl bg-ground px-3 py-1.5 text-xs font-bold text-ink hover:bg-line transition">
+                + Add item
+              </button>
+            </div>
+            {lines.length === 0 && <p className="text-xs text-muted">No line items detected. Click "+ Add item" to add from the invoice.</p>}
+            {lines.map((l, i) => (
+              <div key={i} className="mb-2.5 grid grid-cols-12 gap-2 rounded-2xl bg-ground p-3">
+                <input aria-label="Description" placeholder="Item description" value={l.description} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, description: e.target.value } : x)))} className="col-span-11 min-h-10 rounded-xl bg-white px-3 text-xs font-semibold outline-none" />
+                <button type="button" aria-label="Remove line" onClick={() => setLines(lines.filter((_, j) => j !== i))} className="col-span-1 flex min-h-10 items-center justify-center rounded-xl bg-white text-bad hover:bg-bad-soft transition"><Icon name="x" size={14} /></button>
+                <input aria-label="Qty" placeholder="Qty" inputMode="decimal" value={l.qty} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, qty: e.target.value } : x)))} className="col-span-4 min-h-10 rounded-xl bg-white px-3 text-xs outline-none" />
+                <input aria-label="Unit price" placeholder="Unit ₹" inputMode="decimal" value={l.unit_price} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, unit_price: e.target.value } : x)))} className="col-span-4 min-h-10 rounded-xl bg-white px-3 text-xs outline-none" />
+                <input aria-label="Total amount" placeholder="Amount ₹" inputMode="decimal" value={l.amount} onChange={(e) => setLines(lines.map((x, j) => (j === i ? { ...x, amount: e.target.value } : x)))} className="col-span-4 min-h-10 rounded-xl bg-white px-3 text-xs outline-none font-bold" />
+              </div>
+            ))}
+          </Card>
 
-        <p className="px-1 text-xs leading-relaxed text-muted">An orange dot marks a field you changed. Changes to the number, amounts or bank account are shown to the lender.</p>
-        {error && <ErrorNote>{error}</ErrorNote>}
-        <Btn type="submit" busy={busy} icon="next" className="w-full">Submit for 21 checks</Btn>
+          {/* Buyer Selector Card */}
+          <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={() => setSheet('buyer')} className="flex w-full items-center gap-3.5 rounded-2xl border border-line bg-white p-4 text-left shadow-sm hover:border-ink transition">
+            {buyer ? <Avatar name={buyer.name} dark /> : <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-warn-soft text-warn"><Icon name="building" /></span>}
+            <span className="flex-1 min-w-0">
+              <span className="block text-xs text-muted">{buyer ? (inv.buyer_id === buyerId ? 'Matched buyer · verified' : 'Selected buyer') : 'Required'}</span>
+              <span className="block text-sm font-bold text-ink truncate">{buyer?.name ?? 'Choose buyer from directory →'}</span>
+            </span>
+            <span className="rounded-xl bg-ground px-3 py-1.5 text-xs font-bold text-ink">Change</span>
+          </motion.button>
+
+          <p className="px-1 text-xs leading-relaxed text-muted">
+            <span className="inline-block h-2 w-2 rounded-full bg-warn mr-1.5" /> An orange indicator marks a field you modified. Discrepancies in total amount or bank account are flagged for lender review.
+          </p>
+
+          {error && <ErrorNote>{error}</ErrorNote>}
+
+          <Btn type="submit" busy={busy} icon="next" className="w-full">
+            Submit invoice for 21 automated checks
+          </Btn>
+        </div>
       </form>
 
-      <Sheet open={sheet === 'buyer'} onClose={() => setSheet(null)} title="Who is the buyer?">
-        <label className="mb-3 flex h-12 items-center gap-2 rounded-full bg-ground px-4"><Icon name="search" size={18} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search buyers" className="flex-1 bg-transparent outline-none" /></label>
+      {/* Buyer Search Modal / Sheet */}
+      <Sheet open={sheet === 'buyer'} onClose={() => setSheet(null)} title="Select invoice buyer">
+        <label className="mb-3 flex h-11 items-center gap-2 rounded-full bg-ground px-4">
+          <Icon name="search" size={16} className="text-muted" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search buyers by name or city" className="flex-1 bg-transparent text-sm outline-none" />
+        </label>
         <ul className="max-h-[50vh] space-y-1 overflow-y-auto thin-scroll">
           {shownBuyers.map((b) => (
-            <li key={b.id}><button onClick={() => { setBuyerId(b.id); setSheet(null); setError(null) }} className={`flex min-h-14 w-full items-center gap-3 rounded-2xl px-2 text-left ${b.id === buyerId ? 'bg-ground' : ''}`}>
-              <Avatar name={b.name} dark={b.id === buyerId} /><span className="flex-1"><span className="block font-semibold">{b.name}</span>{b.city && <span className="block text-xs text-muted">{b.city}</span>}</span>
-              {b.id === buyerId && <Icon name="check" />}
-            </button></li>
+            <li key={b.id}>
+              <button onClick={() => { setBuyerId(b.id); setSheet(null); setError(null) }} className={`flex min-h-12 w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition ${b.id === buyerId ? 'bg-ink text-white' : 'hover:bg-ground'}`}>
+                <Avatar name={b.name} dark={b.id === buyerId} />
+                <span className="flex-1 min-w-0">
+                  <span className="block font-bold text-sm truncate">{b.name}</span>
+                  {b.city && <span className={`block text-xs ${b.id === buyerId ? 'text-soft' : 'text-muted'}`}>{b.city}</span>}
+                </span>
+                {b.id === buyerId && <Icon name="check" size={16} stroke="var(--color-lime)" />}
+              </button>
+            </li>
           ))}
         </ul>
       </Sheet>
-      <Sheet open={sheet === 'doc'} onClose={() => setSheet(null)} title="Your document">
-        <div className="max-h-[70vh] overflow-y-auto thin-scroll"><DocumentView path={inv.file_path} type={inv.file_type} /></div>
-      </Sheet>
+
+      {/* Mobile-only Document Sheet */}
+      {!desktop && (
+        <Sheet open={sheet === 'doc'} onClose={() => setSheet(null)} title="Your document">
+          <div className="max-h-[70vh] overflow-y-auto thin-scroll"><DocumentView path={inv.file_path} type={inv.file_type} /></div>
+        </Sheet>
+      )}
     </Page>
   )
 }

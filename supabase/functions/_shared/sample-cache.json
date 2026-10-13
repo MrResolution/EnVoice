@@ -123,5 +123,30 @@
       }
     ],
     "confidence": 0.97
+  },
+  "59188ff3079575d4547fc739c3163dc0adf756c04c59f25d1b90283e6f91b1e1": {
+    "invoice_no": "INV-8801",
+    "invoice_date": "2026-10-13",
+    "due_date": "2026-12-12",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-8801",
+    "bank_account": "918020014321",
+    "subtotal": 50000.0,
+    "tax_amount": 9000.0,
+    "amount": 59000.0,
+    "currency": "INR",
+    "line_items": [
+      {
+        "description": "50 L storage drum",
+        "hsn": "3923",
+        "qty": 100,
+        "unit_price": 500.0,
+        "amount": 50000.0
+      }
+    ],
+    "confidence": 0.99
   }
 }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 
-const QUERY = '(min-width: 1024px)'
+const QUERY = '(min-width: 768px)'
 const native = Capacitor.isNativePlatform()
 const now = () => !native && typeof window !== 'undefined' && window.matchMedia(QUERY).matches
 

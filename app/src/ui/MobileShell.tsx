@@ -50,10 +50,10 @@ function TabLink({ t }: { t: Tab }) {
 export function MobileShell({ role, children }: { role: Role; children: ReactNode }) {
   const tabs = TABS[role]
   return (
-    <div className="min-h-dvh bg-[#e4e8ea] sm:py-6">
-      <div className="relative mx-auto min-h-dvh w-full max-w-[460px] bg-ground sm:min-h-[calc(100dvh-3rem)] sm:overflow-hidden sm:rounded-[40px] sm:shadow-[0_30px_80px_-30px_rgba(18,20,22,0.45)]">
+    <div className="min-h-dvh bg-ground">
+      <div className="relative mx-auto min-h-dvh w-full max-w-lg bg-ground">
         <div className="pb-28">{children}</div>
-        <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-[460px] border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur sm:absolute sm:rounded-b-[40px]">
+        <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-lg border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
           <div className="flex items-center justify-around px-2 pb-2 pt-2.5">
             {tabs.left.map((t) => <TabLink key={t.to} t={t} />)}
             <NavLink to={tabs.fab.to} aria-label={tabs.fab.label}

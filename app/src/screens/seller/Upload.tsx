@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../../lib/auth'
 import { BUCKET, call, supabase } from '../../lib/supabase'
 import { dHash, shrinkIfLarge } from '../../lib/image'
+import { useDesktop } from '../../lib/layout'
 import { Icon, Rings } from '../../ui/Icon'
 import { ErrorNote, RoundBtn } from '../../ui/kit'
 import { buzz, Page, Stagger, StaggerItem } from '../../ui/motion'
@@ -28,10 +29,12 @@ export function Upload() {
   const { profile } = useAuth()
   const nav = useNavigate()
   const [params] = useSearchParams()
+  const desktop = useDesktop()
   const camera = useRef<HTMLInputElement>(null)
   const picker = useRef<HTMLInputElement>(null)
   const [step, setStep] = useState<Step>('idle')
   const [error, setError] = useState<string | null>(null)
+  const [dragging, setDragging] = useState(false)
   const samples = SAMPLES.filter((x) => x[3] === profile?.party_name)
 
   async function send(original: File) {
@@ -52,42 +55,80 @@ export function Upload() {
       nav(`/s/review/${res.invoice_id}`, { state: { note: res.note } })
     } catch (e) { setError((e as Error).message); setStep('idle') }
   }
+
   async function sample(name: string) {
     const res = await fetch(`./samples/${name}`)
     if (!res.ok) return setError('Sample files are not in this build.')
     send(new File([await res.blob()], name, { type: 'image/png' }))
   }
+
   const onPick = (e: React.ChangeEvent<HTMLInputElement>) => { const f = e.target.files?.[0]; e.target.value = ''; if (f) send(f) }
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault(); setDragging(false)
+    const f = e.dataTransfer.files?.[0]
+    if (f) send(f)
+  }
+
   const busy = step !== 'idle'
 
   return (
-    <Page>
-      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="New invoice" subtitle="photo or PDF, max 5 MB" />
-      <div className="space-y-3 px-[18px]">
+    <Page className="space-y-5">
+      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Upload invoice" subtitle="PDF, JPEG, PNG or WebP · max 5 MB" />
+      <div className={desktop ? 'space-y-6 max-w-4xl' : 'space-y-3 px-[18px]'}>
         <AnimatePresence mode="wait">
           {busy ? (
-            <motion.section key="busy" initial={{ opacity: 0, scale: 0.97 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
-              className="relative overflow-hidden rounded-[28px] bg-ink px-5 py-7 text-white" aria-live="polite">
-              <Rings className="-right-12 -top-12 h-44 w-44" />
-              <div className="relative mx-auto h-40 w-32 overflow-hidden rounded-2xl bg-white p-3">
-                {[60, 85, 70, 90, 55].map((w, i) => <div key={i} className="mb-2 h-1.5 rounded bg-line" style={{ width: `${w}%` }} />)}
-                <div className="mt-3 h-6 rounded bg-ground" />
-                <motion.div className="absolute inset-x-0 h-8 bg-gradient-to-b from-transparent via-lime/60 to-transparent" animate={{ top: ['-10%', '90%', '-10%'] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} />
+            <motion.section key="busy" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+              className="relative overflow-hidden rounded-[28px] bg-ink px-6 py-10 text-white shadow-xl" aria-live="polite">
+              <Rings className="-right-12 -top-12 h-56 w-56" />
+              <div className="relative mx-auto h-44 w-36 overflow-hidden rounded-2xl bg-white p-3.5 shadow-md">
+                {[60, 85, 70, 90, 55].map((w, i) => <div key={i} className="mb-2.5 h-1.5 rounded bg-line" style={{ width: `${w}%` }} />)}
+                <div className="mt-4 h-7 rounded bg-ground" />
+                <motion.div className="absolute inset-x-0 h-10 bg-gradient-to-b from-transparent via-lime/60 to-transparent" animate={{ top: ['-10%', '90%', '-10%'] }} transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }} />
               </div>
-              <ol className="relative mt-6 space-y-2.5">
+              <ol className="relative mt-8 space-y-3 max-w-sm mx-auto">
                 {STEPS.map((s, i) => {
                   const at = STEPS.indexOf(step), done = i < at, now = i === at
                   return (
-                    <li key={s} className={`flex items-center gap-3 text-sm ${now ? 'font-semibold text-white' : done ? 'text-lime' : 'text-soft'}`}>
+                    <li key={s} className={`flex items-center gap-3 text-sm ${now ? 'font-bold text-white' : done ? 'text-lime font-semibold' : 'text-soft'}`}>
                       <span className={`flex h-6 w-6 items-center justify-center rounded-full ${done ? 'bg-lime text-ink' : now ? 'bg-ink-3' : 'bg-ink-2'}`}>
                         {done ? <Icon name="check" size={13} width={3} /> : now ? <span className="h-3 w-3 animate-spin rounded-full border-2 border-lime border-t-transparent" /> : null}
-                      </span>{STEP_TEXT[s]}
+                      </span>
+                      {STEP_TEXT[s]}
                     </li>
                   )
                 })}
               </ol>
             </motion.section>
+          ) : desktop ? (
+            /* DESKTOP DRAG & DROP ZONE */
+            <motion.div key="desk-pick" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={onDrop}
+                onClick={() => picker.current?.click()}
+                className={`relative flex flex-col items-center justify-center rounded-3xl border-2 border-dashed p-10 text-center cursor-pointer transition-all ${
+                  dragging ? 'border-lime bg-lime/10 scale-[1.01]' : 'border-line bg-white hover:border-ink hover:bg-ground/50'
+                }`}>
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-ground mb-4 shadow-sm">
+                  <Icon name="upload" size={28} />
+                </span>
+                <span className="text-lg font-bold text-ink">Drag and drop your invoice here, or browse</span>
+                <span className="mt-1 text-xs text-muted">Supports PDF, PNG, JPEG or WebP (up to 5 MB)</span>
+                <span className="mt-4 rounded-xl bg-ink px-4 py-2 text-xs font-bold text-white hover:bg-ink-2 transition">
+                  Choose file from laptop
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5 rounded-2xl bg-white border border-line px-4 py-3 text-xs text-muted">
+                <Icon name="shield" size={16} className="text-ink shrink-0" />
+                <span>
+                  <b>Private & secure:</b> Only you, the matching buyer, and the lender can access the original invoice. Its cryptographic SHA-256 fingerprint is recorded on the immutable audit chain.
+                </span>
+              </div>
+            </motion.div>
           ) : (
+            /* MOBILE SELECTION BUTTONS */
             <motion.div key="pick" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-3">
               <motion.button whileTap={{ scale: 0.98 }} onClick={() => camera.current?.click()}
                 className={`relative flex w-full items-center gap-4 overflow-hidden rounded-[28px] bg-ink p-5 text-left text-white ${params.get('camera') ? 'ring-4 ring-lime/50' : ''}`}>
@@ -103,25 +144,36 @@ export function Upload() {
             </motion.div>
           )}
         </AnimatePresence>
+
         <input ref={camera} type="file" accept="image/*" capture="environment" hidden onChange={onPick} />
         <input ref={picker} type="file" accept="application/pdf,image/png,image/jpeg,image/webp" hidden onChange={onPick} />
         {error && <ErrorNote>{error}</ErrorNote>}
 
+        {/* Demo Samples Section */}
         {samples.length > 0 && !busy && (
-          <>
-            <h2 className="pt-2 text-[17px] font-bold">Demo invoices</h2>
-            <Stagger className="space-y-2">
+          <div className="pt-2">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-base font-bold text-ink">Test with pre-loaded demo invoices</h2>
+              <span className="text-xs text-muted">Click to test instant extraction & checks</span>
+            </div>
+            <Stagger className={`grid gap-3 ${desktop ? 'grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
               {samples.map(([file, title, sub]) => (
                 <StaggerItem key={file}>
-                  <motion.button whileTap={{ scale: 0.98 }} onClick={() => sample(file)} className="flex w-full items-center gap-3 rounded-[20px] bg-white p-3.5 text-left">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-ground"><Icon name="doc" size={20} /></span>
-                    <span className="min-w-0 flex-1"><span className="block truncate text-[15px] font-bold">{title}</span><span className="block truncate text-xs text-muted">{sub}</span></span>
-                    <Icon name="chevron" size={18} stroke="var(--color-muted)" />
+                  <motion.button whileTap={{ scale: 0.98 }} onClick={() => sample(file)}
+                    className="flex w-full items-center gap-3.5 rounded-2xl border border-line bg-white p-3.5 text-left hover:border-ink transition shadow-sm">
+                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-ground">
+                      <Icon name="doc" size={20} />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-bold text-ink">{title}</span>
+                      <span className="block truncate text-xs text-muted">{sub}</span>
+                    </span>
+                    <Icon name="chevron" size={16} stroke="var(--color-muted)" />
                   </motion.button>
                 </StaggerItem>
               ))}
             </Stagger>
-          </>
+          </div>
         )}
       </div>
     </Page>

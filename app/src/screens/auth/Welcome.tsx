@@ -19,6 +19,13 @@ function GoogleG() {
   )
 }
 
+const DEMO_PREVIEWS = [
+  { email: 'ravi@invoseal.test', name: 'Ravi Plastics', role: 'Seller · Uploads & advances' },
+  { email: 'peacock@invoseal.test', name: 'Peacock Retail', role: 'Buyer · POs & confirms' },
+  { email: 'lender@invoseal.test', name: 'Asha Menon', role: 'Lender · Review queue & risk' },
+  { email: 'auditor@invoseal.test', name: 'Audit Desk', role: 'Auditor · Merkle audit chain' },
+]
+
 export function Welcome() {
   const [google, setGoogle] = useState<boolean | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -31,58 +38,157 @@ export function Welcome() {
   }
 
   return (
-    <div className="flex min-h-dvh justify-center bg-[#e4e8ea] sm:items-center sm:py-6">
-      <div className="relative flex min-h-dvh w-full max-w-[460px] flex-col overflow-hidden bg-ground px-6 pb-[max(1.75rem,env(safe-area-inset-bottom))] pt-[max(2.5rem,env(safe-area-inset-top))] sm:min-h-[820px] sm:rounded-[40px] sm:shadow-[0_30px_80px_-30px_rgba(18,20,22,0.45)]">
-        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} className="flex items-center gap-2.5">
-          <LogoMark size={34} /><span className="text-xl font-extrabold tracking-tight">Invoseal</span>
-        </motion.div>
-
-        <div className="relative mt-4 h-[290px]" aria-hidden>
-          <motion.div initial={{ opacity: 0, x: -40, rotate: -14 }} animate={{ opacity: 1, x: 0, rotate: -6 }} transition={{ ...soft, delay: 0.1 }} className="absolute left-0 top-8">
-            <motion.div animate={float(0)} className="h-[140px] w-[228px] rounded-3xl bg-ink p-[18px] text-white">
-              <div className="text-xs text-soft">Invoice INV-1001</div>
-              <div className="mt-2 text-[26px] font-bold tracking-tight">₹2,40,000</div>
-              <div className="mt-3.5 text-xs text-soft">Peacock Retail · due 9 Dec</div>
-            </motion.div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, x: 40, rotate: 12 }} animate={{ opacity: 1, x: 0, rotate: 4 }} transition={{ ...soft, delay: 0.25 }} className="absolute right-0 top-[104px]">
-            <motion.div animate={float(1.2)} className="h-[150px] w-[222px] rounded-3xl bg-lime p-[18px]">
-              <div className="flex items-center justify-between"><span className="text-xs font-semibold">Advance released</span><span className="flex h-7 w-7 items-center justify-center rounded-full bg-ink text-lime"><Icon name="check" size={14} width={3} /></span></div>
-              <div className="mt-2.5 text-[28px] font-extrabold tracking-tight">₹2,04,000</div>
-              <div className="mt-2.5 text-xs">85% · 21 checks passed</div>
-            </motion.div>
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20, scale: 0.9 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ ...soft, delay: 0.45 }}
-            className="absolute left-8 top-[226px] flex items-center gap-2 rounded-full bg-white px-4 py-2.5 text-[13px] font-semibold shadow-[0_8px_24px_rgba(18,20,22,0.12)]">
-            <Icon name="shield" size={16} />Audit chain verified
-          </motion.div>
+    <div className="min-h-dvh bg-ground flex flex-col justify-between">
+      {/* Top Navbar */}
+      <header className="w-full border-b border-line bg-white/80 backdrop-blur px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
+          <div className="flex items-center gap-3">
+            <LogoMark size={36} />
+            <div>
+              <span className="text-xl font-extrabold tracking-tight block">Invoseal</span>
+              <span className="text-[11px] font-semibold text-muted block -mt-0.5">Invoice Financing Platform</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-lime/30 px-3 py-1 text-xs font-bold text-ink">
+              <Icon name="shield" size={14} /> Hackathon Prototype
+            </span>
+            <Link to="/auth/email" className="rounded-full bg-white px-4 py-2 text-sm font-bold ring-1 ring-line hover:bg-ground transition">
+              Sign in
+            </Link>
+          </div>
         </div>
+      </header>
 
-        <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.3 }} className="mt-1 text-[40px] font-extrabold leading-[1.05] tracking-[-0.035em]">
-          Cash today<br />for invoices<br />paid later.
-        </motion.h1>
-        <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }} className="mt-3 text-[15px] leading-relaxed text-muted">
-          Upload an invoice, your buyer confirms, a lender advances up to 85%. Every check explained.
-        </motion.p>
+      {/* Main Content Area */}
+      <main className="mx-auto w-full max-w-7xl flex-1 px-6 py-8 lg:py-14">
+        <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
+          
+          {/* Left Column: Hero & Value Proposition */}
+          <div className="lg:col-span-7 space-y-6">
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={soft} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-1.5 text-xs font-semibold text-white">
+              <span className="flex h-2 w-2 rounded-full bg-lime" />
+              <span>Instant AI extraction · 21 rule checks · On-chain audit</span>
+            </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.55 }} className="mt-auto space-y-2.5 pt-6">
-          {error && <ErrorNote>{error}</ErrorNote>}
-          <motion.button whileTap={{ scale: 0.97 }} onClick={onGoogle} className="flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-ink text-base font-bold text-white">
-            <GoogleG />Continue with Google
-          </motion.button>
-          <Link to="/auth/email" className="flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-white text-base font-bold ring-1 ring-line transition-transform active:scale-[0.97]">
-            <Icon name="mail" />Continue with email
-          </Link>
-          <Link to="/auth/email?role=lender" className="flex h-14 w-full items-center gap-3 rounded-full bg-lime pl-2 pr-5 text-left transition-transform active:scale-[0.97]">
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-lime"><Icon name="chart" size={18} /></span>
-            <span className="flex-1"><span className="block text-[15px] font-bold leading-tight">I'm a lender</span><span className="block text-xs leading-tight">open the web dashboard</span></span>
-            <Icon name="next" size={18} />
-          </Link>
-          <Link to="/auth/email?demo=1" className="block pt-1.5 text-center text-xs text-muted underline-offset-2 hover:underline">
-            Try a demo account · prototype with mock data, no real money
-          </Link>
-        </motion.div>
-      </div>
+            <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.1 }}
+              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-[-0.035em] text-ink leading-[1.08]">
+              Cash today <br className="hidden sm:inline" />
+              for invoices <br className="hidden sm:inline" />
+              paid later.
+            </motion.h1>
+
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
+              className="max-w-xl text-base sm:text-lg text-muted leading-relaxed">
+              Upload an invoice, your buyer confirms, a lender advances up to 85%. Every decision is backed by 21 automated checks and an immutable cryptographic audit chain.
+            </motion.p>
+
+            {/* Feature Pills */}
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }}
+              className="flex flex-wrap gap-2.5 pt-1">
+              <span className="inline-flex items-center gap-1.5 rounded-2xl bg-white px-3.5 py-2 text-xs font-bold ring-1 ring-line">
+                <Icon name="check" size={14} /> 3-Way PO & Delivery Match
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-2xl bg-white px-3.5 py-2 text-xs font-bold ring-1 ring-line">
+                <Icon name="shield" size={14} /> Tamper-Evident Merkle Roots
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-2xl bg-white px-3.5 py-2 text-xs font-bold ring-1 ring-line">
+                <Icon name="chart" size={14} /> Risk-Ranked Lender Queue
+              </span>
+            </motion.div>
+
+            {/* Interactive Showcase Cards */}
+            <div className="relative pt-4 sm:pt-6">
+              <div className="relative flex flex-wrap gap-4 items-center">
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...soft, delay: 0.3 }}
+                  className="rounded-3xl bg-ink p-5 text-white shadow-xl w-64">
+                  <div className="text-xs text-soft">Invoice INV-1001</div>
+                  <div className="mt-1.5 text-2xl font-bold tracking-tight">₹2,40,000</div>
+                  <div className="mt-2.5 flex items-center justify-between text-xs text-soft">
+                    <span>Peacock Retail</span>
+                    <span className="rounded-full bg-ink-2 px-2 py-0.5 text-lime font-semibold">Clean</span>
+                  </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ ...soft, delay: 0.4 }}
+                  className="rounded-3xl bg-lime p-5 text-ink shadow-xl w-64">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold">Advance released</span>
+                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-ink text-lime">
+                      <Icon name="check" size={13} width={3} />
+                    </span>
+                  </div>
+                  <div className="mt-1.5 text-2xl font-extrabold tracking-tight">₹2,04,000</div>
+                  <div className="mt-2.5 text-xs font-semibold">85% · 21 checks passed</div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.5 }}
+                  className="rounded-2xl bg-white px-4 py-3 text-xs font-bold shadow-md ring-1 ring-line flex items-center gap-2">
+                  <Icon name="shield" size={16} /> Audit chain verified on-chain
+                </motion.div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column: Actions & Direct Demo Login */}
+          <div className="lg:col-span-5">
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.2 }}
+              className="rounded-[32px] bg-white p-6 sm:p-8 shadow-[0_20px_60px_-20px_rgba(18,20,22,0.1)] border border-line">
+              <h2 className="text-2xl font-extrabold tracking-tight text-ink">Get started</h2>
+              <p className="mt-1 text-sm text-muted">Sign in or pick a role to experience the entire workflow.</p>
+
+              {error && <div className="mt-4"><ErrorNote>{error}</ErrorNote></div>}
+
+              <div className="mt-6 space-y-3">
+                <motion.button whileTap={{ scale: 0.98 }} onClick={onGoogle}
+                  className="flex h-13 w-full items-center justify-center gap-3 rounded-2xl bg-ink text-base font-bold text-white transition hover:bg-ink-2">
+                  <GoogleG /> Continue with Google
+                </motion.button>
+
+                <Link to="/auth/email"
+                  className="flex h-13 w-full items-center justify-center gap-2.5 rounded-2xl bg-ground text-base font-bold text-ink ring-1 ring-line transition hover:bg-white">
+                  <Icon name="mail" size={18} /> Continue with email
+                </Link>
+
+                <Link to="/auth/email?role=lender"
+                  className="flex h-14 w-full items-center gap-3 rounded-2xl bg-lime px-4 text-left transition hover:bg-lime-deep">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-lime">
+                    <Icon name="chart" size={18} />
+                  </span>
+                  <span className="flex-1 min-w-0">
+                    <span className="block text-[15px] font-bold leading-tight">I'm a lender</span>
+                    <span className="block text-xs text-ink-3 truncate leading-tight">Review queue, risk ranking & portfolio</span>
+                  </span>
+                  <Icon name="next" size={18} />
+                </Link>
+              </div>
+
+              {/* One-Click Demo Access for Judges */}
+              <div className="mt-6 pt-5 border-t border-line">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted">Test with demo accounts</span>
+                  <span className="text-[11px] text-muted">Hackathon preview</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {DEMO_PREVIEWS.map((d) => (
+                    <Link key={d.email} to={`/auth/email?email=${encodeURIComponent(d.email)}&demo=1`}
+                      className="group flex flex-col rounded-2xl bg-ground p-3 hover:bg-ink hover:text-white transition text-left">
+                      <span className="text-xs font-bold group-hover:text-white text-ink">{d.name}</span>
+                      <span className="text-[11px] text-muted group-hover:text-lime truncate">{d.role}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="w-full border-t border-line bg-white px-6 py-4 text-center text-xs text-muted">
+        Invoseal prototype for SYNESIS 26 · Mock invoice financing with automated checks & cryptographic audit trail
+      </footer>
     </div>
   )
 }

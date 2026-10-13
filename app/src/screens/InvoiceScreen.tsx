@@ -1,4 +1,4 @@
-// One invoice on the phone, for the seller (track, accept the advance) and the buyer (confirm or dispute).
+// One invoice view, for the seller (track, accept the advance) and the buyer (confirm or dispute).
 import { useEffect, useState } from 'react'
 import { useLocation, useParams } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
@@ -6,6 +6,7 @@ import { day, inr, mask, qty } from '@shared/normalize.ts'
 import { useAuth } from '../lib/auth'
 import { call } from '../lib/supabase'
 import { nextStep } from '../lib/data'
+import { useDesktop } from '../lib/layout'
 import { DocumentView } from '../components/DocumentView'
 import { Icon } from '../ui/Icon'
 import { Badge, Btn, Card, DarkCard, Empty, ErrorNote, RoundBtn, Skeleton } from '../ui/kit'
@@ -16,6 +17,7 @@ import { ChecksList, Dot, MatchTable, RiskBars, RiskRing, Steps, useInvoiceDetai
 export function InvoiceScreen() {
   const { id } = useParams()
   const { profile } = useAuth()
+  const desktop = useDesktop()
   const fresh = Boolean((useLocation().state as { fresh?: boolean } | null)?.fresh)
   const { d, reload } = useInvoiceDetail(id)
   const [checking, setChecking] = useState(fresh)
@@ -24,16 +26,115 @@ export function InvoiceScreen() {
 
   useEffect(() => { if (fresh) { const t = setTimeout(() => setChecking(false), 2300); return () => clearTimeout(t) } }, [fresh])
 
-  if (d === false) return <Page><TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title="Invoice" /><div className="px-[18px]"><Empty icon="shield" title="Not visible to this account">Either it doesn't exist or your role can't see it. Access denied is a feature.</Empty></div></Page>
-  if (!d) return <Page><TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title="Invoice" /><div className="space-y-3 px-[18px]"><Skeleton className="h-28" /><Skeleton className="h-12" /><Skeleton className="h-64" /></div></Page>
+  if (d === false) {
+    return (
+      <Page>
+        <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title="Invoice" />
+        <div className="px-4">
+          <Empty icon="shield" title="Not visible to this account">Either it doesn't exist or your role can't see it. Access denied is a feature.</Empty>
+        </div>
+      </Page>
+    )
+  }
+
+  if (!d) {
+    return (
+      <Page>
+        <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title="Invoice" />
+        <div className="space-y-4 px-4 max-w-4xl">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-64 w-full" />
+        </div>
+      </Page>
+    )
+  }
 
   const { inv, offer } = d
+
   return (
-    <Page>
-      <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title={inv.invoice_no ?? 'Invoice'} subtitle={role === 'buyer' ? d.supplier : d.buyer} />
+    <Page className="space-y-5">
+      <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title={inv.invoice_no ?? 'Invoice'} subtitle={role === 'buyer' ? `Supplier: ${d.supplier}` : `Buyer: ${d.buyer}`} />
+
       <AnimatePresence mode="wait">
-        {checking ? <CheckingRun key="run" d={d} /> : (
-          <motion.div key="body" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 px-[18px]">
+        {checking ? (
+          <CheckingRun key="run" d={d} />
+        ) : desktop ? (
+          /* DESKTOP SPLIT VIEW */
+          <motion.div key="desk-body" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Core Invoice Info, Checks & Verification */}
+            <div className="lg:col-span-7 space-y-4">
+              <Hero d={d} role={role} />
+
+              <Card className="border border-line">
+                <div className="mb-2 text-xs font-bold text-muted uppercase tracking-wider">Lifecycle progress</div>
+                <Steps inv={inv} />
+              </Card>
+
+              {d.checks.some((c) => c.category === 'three_way') && (
+                <Card className="border border-line">
+                  <div className="mb-2 text-[15px] font-bold text-ink">Three-way match (Invoice vs PO vs Delivery)</div>
+                  <MatchTable checks={d.checks} />
+                </Card>
+              )}
+
+              {d.checks.length > 0 && <AllChecks d={d} />}
+
+              {/* Embedded Document on Desktop */}
+              <Card className="border border-line p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-bold text-ink">Original uploaded document</span>
+                  <span className="text-xs text-muted font-mono">{inv.file_type}</span>
+                </div>
+                <div className="rounded-xl border border-line bg-ground/50 p-2 max-h-[600px] overflow-y-auto thin-scroll">
+                  <DocumentView path={inv.file_path} type={inv.file_type} />
+                </div>
+              </Card>
+            </div>
+
+            {/* Right Column: Actions, Risk Analysis, Key Metrics */}
+            <div className="lg:col-span-5 space-y-4 sticky top-6">
+              {/* Primary Action Widget */}
+              {role === 'supplier' && offer?.status === 'released' && (
+                <Card className="border-2 border-lime bg-[#f9fee9] p-5 shadow-sm">
+                  <div className="text-xs font-bold text-ok uppercase tracking-wider">Advance Available</div>
+                  <div className="mt-1 text-2xl font-extrabold text-ink">{inr(offer.advance_amount)}</div>
+                  <div className="mt-0.5 text-xs text-muted">{offer.advance_pct}% advance of {inr(inv.amount)}</div>
+                  <div className="mt-4">
+                    <AcceptBar d={d} onDone={reload} desktop />
+                  </div>
+                </Card>
+              )}
+
+              {role === 'buyer' && (
+                <Card className="border border-line p-5">
+                  <div className="text-xs font-bold text-muted uppercase tracking-wider mb-2">Buyer Action</div>
+                  <BuyerBar d={d} onDone={reload} desktop />
+                </Card>
+              )}
+
+              {/* Risk Assessment Card */}
+              {inv.risk_score !== null && inv.risk_level && (
+                <Card className="border border-line p-5" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ ...soft, delay: 0.05 }}>
+                  <div className="flex items-center gap-4">
+                    <RiskRing score={inv.risk_score} level={inv.risk_level} size={96} />
+                    <div className="min-w-0 text-xs leading-relaxed">
+                      <div className="mb-1 text-sm font-bold text-ink">
+                        {inv.status === 'rejected' ? 'Why it stopped' : inv.risk_level === 'LOW' ? 'Why you can trust it' : 'What a person will look at'}
+                      </div>
+                      <span className="text-muted">{inv.risk_summary?.replace(/^Risk \d+\/100 — \w+\. /, '')}</span>
+                    </div>
+                  </div>
+                  <div className="mt-4 border-t border-line pt-3"><RiskBars inv={inv} /></div>
+                </Card>
+              )}
+
+              <Tiles d={d} />
+            </div>
+          </motion.div>
+        ) : (
+          /* MOBILE PHONE LAYOUT */
+          <motion.div key="mob-body" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3 px-[18px]">
             <Hero d={d} role={role} />
             <Steps inv={inv} />
             {inv.risk_score !== null && inv.risk_level && (
@@ -66,15 +167,15 @@ export function InvoiceScreen() {
 function CheckingRun({ d }: { d: Detail }) {
   const names = d.checks.length ? d.checks : Array.from({ length: 21 }, (_, i) => ({ id: String(i), name: 'Check', status: 'pass' as const }))
   return (
-    <motion.section exit={{ opacity: 0, scale: 0.98 }} className="mx-[18px] overflow-hidden rounded-[28px] bg-ink p-5 text-white" aria-live="polite">
+    <motion.section exit={{ opacity: 0, scale: 0.98 }} className="mx-4 overflow-hidden rounded-[28px] bg-ink p-6 text-white max-w-2xl" aria-live="polite">
       <div className="flex items-center gap-3">
         <span className="h-6 w-6 animate-spin rounded-full border-[3px] border-lime border-t-transparent" />
         <div><div className="text-lg font-bold">Running {names.length} checks</div><div className="text-xs text-soft">PO, delivery, duplicates, bank, document, behaviour</div></div>
       </div>
-      <motion.ul className="mt-4 grid grid-cols-1 gap-1.5" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.08 } } }}>
+      <motion.ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.06 } } }}>
         {names.slice(0, 21).map((c) => (
-          <motion.li key={c.id} variants={{ h: { opacity: 0, x: -8 }, s: { opacity: 1, x: 0 } }} className="flex items-center gap-2.5 text-[13px]">
-            <Dot status={c.status} /><span className="text-soft">{c.name}</span>
+          <motion.li key={c.id} variants={{ h: { opacity: 0, x: -8 }, s: { opacity: 1, x: 0 } }} className="flex items-center gap-2.5 text-xs">
+            <Dot status={c.status} /><span className="text-soft truncate">{c.name}</span>
           </motion.li>
         ))}
       </motion.ul>
@@ -86,23 +187,33 @@ function Hero({ d, role }: { d: Detail; role: 'supplier' | 'buyer' }) {
   const { inv, offer } = d
   if (offer && role === 'supplier') {
     return (
-      <DarkCard className="px-[18px] py-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+      <DarkCard className="px-5 py-5" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex items-center justify-between gap-3">
-          <div><div className="text-[28px] font-bold"><CountUp value={offer.advance_amount} format={inr} /></div><div className="text-[13px] text-soft">{offer.status === 'accepted' ? `Accepted ${day(offer.accepted_at)} · mock payout` : 'Advance offered today'}</div></div>
-          <span className="rounded-full bg-ink-2 px-3 py-2 text-[13px] font-bold text-lime">{offer.advance_pct}% of {inr(inv.amount)}</span>
+          <div>
+            <div className="text-[32px] font-extrabold text-white"><CountUp value={offer.advance_amount} format={inr} /></div>
+            <div className="text-xs text-soft">{offer.status === 'accepted' ? `Accepted ${day(offer.accepted_at)} · mock payout` : 'Advance ready for acceptance'}</div>
+          </div>
+          <span className="rounded-full bg-ink-2 px-3 py-1.5 text-xs font-bold text-lime">{offer.advance_pct}% of {inr(inv.amount)}</span>
         </div>
       </DarkCard>
     )
   }
   return (
-    <DarkCard className="px-[18px] py-4" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+    <DarkCard className="px-5 py-5" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
       <div className="flex items-center justify-between gap-3">
-        <div><div className="text-[28px] font-bold">{inr(inv.amount)}</div><div className="text-[13px] text-soft">incl. GST {inr(inv.tax_amount)} · due {day(inv.due_date)}</div></div>
-        <span className={`rounded-full bg-ink-2 px-3 py-2 text-[13px] font-bold ${inv.status === 'rejected' ? 'text-[#f87171]' : 'text-lime'}`}>
-          {inv.status === 'rejected' ? 'Rejected' : `${d.checks.filter((c) => c.status === 'pass').length}/${d.checks.length} ✓`}
+        <div>
+          <div className="text-[32px] font-extrabold text-white">{inr(inv.amount)}</div>
+          <div className="text-xs text-soft">incl. GST {inr(inv.tax_amount)} · due {day(inv.due_date)}</div>
+        </div>
+        <span className={`rounded-full bg-ink-2 px-3 py-1.5 text-xs font-bold ${inv.status === 'rejected' ? 'text-[#f87171]' : 'text-lime'}`}>
+          {inv.status === 'rejected' ? 'Rejected' : `${d.checks.filter((c) => c.status === 'pass').length}/${d.checks.length} checks passed`}
         </span>
       </div>
-      <p className="mt-3 text-[13px] leading-relaxed text-soft">{role === 'buyer' && inv.buyer_status === 'pending' && inv.status !== 'rejected' ? `Confirm only if you received these goods for this amount. Your OK releases ${d.supplier}'s advance.` : nextStep(inv)}</p>
+      <p className="mt-3 text-xs leading-relaxed text-soft">
+        {role === 'buyer' && inv.buyer_status === 'pending' && inv.status !== 'rejected'
+          ? `Confirm only if you received these goods for this amount. Your confirmation releases ${d.supplier}'s advance.`
+          : nextStep(inv)}
+      </p>
     </DarkCard>
   )
 }
@@ -110,7 +221,11 @@ function Hero({ d, role }: { d: Detail; role: 'supplier' | 'buyer' }) {
 function Tiles({ d }: { d: Detail }) {
   const { inv, offer } = d
   const tile = (label: string, value: string, note: string, tone?: string) => (
-    <Card className="p-3.5"><div className="text-xs text-muted">{label}</div><div className="mt-0.5 text-lg font-bold">{value}</div><div className={`mt-0.5 text-xs ${tone ?? 'text-muted'}`}>{note}</div></Card>
+    <Card className="p-3.5 border border-line">
+      <div className="text-[11px] font-semibold text-muted">{label}</div>
+      <div className="mt-0.5 text-base font-bold text-ink">{value}</div>
+      <div className={`mt-0.5 text-xs ${tone ?? 'text-muted'}`}>{note}</div>
+    </Card>
   )
   const credit = inv.buyer_score_parts
   return (
@@ -125,9 +240,13 @@ function AllChecks({ d }: { d: Detail }) {
   const [open, setOpen] = useState(false)
   const problems = d.checks.filter((c) => c.status !== 'pass')
   return (
-    <Card>
-      <div className="flex items-center justify-between"><span className="text-[15px] font-bold">{problems.length ? `${problems.length} to look at` : `All ${d.checks.length} checks passed`}</span>
-        <button onClick={() => setOpen(!open)} className="min-h-11 rounded-xl px-2 text-sm font-semibold" aria-expanded={open}>{open ? 'Hide' : `See all ${d.checks.length}`}</button></div>
+    <Card className="border border-line">
+      <div className="flex items-center justify-between pb-2">
+        <span className="text-[15px] font-bold text-ink">{problems.length ? `${problems.length} items to review` : `All ${d.checks.length} checks passed`}</span>
+        <button onClick={() => setOpen(!open)} className="rounded-xl bg-ground px-3 py-1 text-xs font-bold text-ink hover:bg-line transition" aria-expanded={open}>
+          {open ? 'Hide details' : `See all ${d.checks.length}`}
+        </button>
+      </div>
       <ChecksList checks={open ? d.checks : problems} />
     </Card>
   )
@@ -137,7 +256,7 @@ function DocCard({ d }: { d: Detail }) {
   const [open, setOpen] = useState(false)
   return (
     <>
-      <motion.button whileTap={{ scale: 0.98 }} onClick={() => setOpen(true)} className="flex w-full items-center gap-3 rounded-[22px] bg-white p-3.5 text-left">
+      <motion.button whileTap={{ scale: 0.98 }} onClick={() => setOpen(true)} className="flex w-full items-center gap-3 rounded-[22px] bg-white p-3.5 text-left border border-line">
         <span className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-ground"><Icon name="file" /></span>
         <span className="flex-1"><span className="block text-[15px] font-bold">Original document</span><span className="block text-xs text-muted">private · opens with a 60-second link</span></span>
         <Icon name="chevron" size={18} stroke="var(--color-muted)" />
@@ -149,12 +268,13 @@ function DocCard({ d }: { d: Detail }) {
   )
 }
 
-/** Sticky action area at the bottom of the screen, above the tab bar. */
-function ActionBar({ children }: { children: React.ReactNode }) {
-  return <div className="sticky bottom-[96px] z-20 -mx-[18px] bg-gradient-to-t from-ground via-ground to-transparent px-[18px] pb-2 pt-4">{children}</div>
+/** Sticky action area at the bottom of the screen on mobile. */
+function ActionBar({ children, desktop }: { children: React.ReactNode; desktop?: boolean }) {
+  if (desktop) return <div>{children}</div>
+  return <div className="sticky bottom-6 z-20 -mx-[18px] bg-gradient-to-t from-ground via-ground to-transparent px-[18px] pb-2 pt-4">{children}</div>
 }
 
-function AcceptBar({ d, onDone }: { d: Detail; onDone: () => void }) {
+function AcceptBar({ d, onDone, desktop }: { d: Detail; onDone: () => void; desktop?: boolean }) {
   const toast = useToast()
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -166,7 +286,7 @@ function AcceptBar({ d, onDone }: { d: Detail; onDone: () => void }) {
   }
   return (
     <>
-      <ActionBar><Btn busy={busy} onClick={accept} icon="down" className="w-full">Accept {inr(d.offer!.advance_amount)}</Btn></ActionBar>
+      <ActionBar desktop={desktop}><Btn busy={busy} onClick={accept} icon="down" className="w-full">Accept advance {inr(d.offer!.advance_amount)}</Btn></ActionBar>
       <AnimatePresence>{done && <Celebrate amount={d.offer!.advance_amount} onClose={() => setDone(false)} />}</AnimatePresence>
     </>
   )
@@ -187,18 +307,23 @@ function Celebrate({ amount, onClose }: { amount: number; onClose: () => void })
   )
 }
 
-function BuyerBar({ d, onDone }: { d: Detail; onDone: () => void }) {
+function BuyerBar({ d, onDone, desktop }: { d: Detail; onDone: () => void; desktop?: boolean }) {
   const toast = useToast()
   const [busy, setBusy] = useState<string | null>(null)
   const [dispute, setDispute] = useState(false)
   const [note, setNote] = useState('')
   const [error, setError] = useState<string | null>(null)
   const { inv } = d
+
   if (inv.buyer_status !== 'pending' || ['rejected', 'offer_released'].includes(inv.status)) {
     return inv.buyer_status === 'pending' ? null : (
-      <div className="flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm"><Badge tone={inv.buyer_status === 'confirmed' ? 'ok' : 'warn'}>{inv.buyer_status}</Badge>{inv.buyer_note ?? (inv.buyer_status === 'confirmed' ? 'You confirmed the goods and the amount.' : '')}</div>
+      <div className="flex items-center gap-2 rounded-2xl bg-white border border-line px-4 py-3 text-xs">
+        <Badge tone={inv.buyer_status === 'confirmed' ? 'ok' : 'warn'}>{inv.buyer_status}</Badge>
+        <span className="text-muted">{inv.buyer_note ?? (inv.buyer_status === 'confirmed' ? 'You confirmed the goods and the amount.' : '')}</span>
+      </div>
     )
   }
+
   async function act(action: 'confirm' | 'dispute') {
     setBusy(action); setError(null)
     try {
@@ -207,9 +332,10 @@ function BuyerBar({ d, onDone }: { d: Detail; onDone: () => void }) {
     } catch (e) { setError((e as Error).message) }
     setBusy(null)
   }
+
   return (
     <>
-      <ActionBar>
+      <ActionBar desktop={desktop}>
         <div className="grid grid-cols-2 gap-2.5">
           <Btn kind="dark" onClick={() => setDispute(true)}>Dispute</Btn>
           <Btn busy={busy === 'confirm'} onClick={() => act('confirm')} icon="check">Confirm</Btn>
@@ -219,10 +345,10 @@ function BuyerBar({ d, onDone }: { d: Detail; onDone: () => void }) {
       <Sheet open={dispute} onClose={() => setDispute(false)} title="What's wrong with this invoice?">
         <div className="mb-3 flex flex-wrap gap-2">
           {['Fewer goods arrived', 'Price is not what we agreed', 'Goods were damaged', 'We never ordered this'].map((r) => (
-            <button key={r} onClick={() => setNote(r)} className={`min-h-11 rounded-full px-4 text-sm ${note === r ? 'bg-ink text-white' : 'bg-ground'}`}>{r}</button>
+            <button key={r} onClick={() => setNote(r)} className={`min-h-10 rounded-full px-4 text-xs font-semibold ${note === r ? 'bg-ink text-white' : 'bg-ground'}`}>{r}</button>
           ))}
         </div>
-        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={300} placeholder="Add details for the lender" className="w-full rounded-2xl bg-ground p-3 outline-none" />
+        <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} maxLength={300} placeholder="Add details for the lender" className="w-full rounded-2xl bg-ground p-3 text-xs outline-none" />
         {error && <div className="mt-2"><ErrorNote>{error}</ErrorNote></div>}
         <Btn kind="dark" className="mt-3 w-full" busy={busy === 'dispute'} disabled={!note.trim()} onClick={() => act('dispute')}>Send dispute</Btn>
       </Sheet>
