@@ -2,6 +2,8 @@ import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { useAuth } from '../../lib/auth'
+import { parties } from '../../lib/data'
+import { extractInvoiceLocally } from '../../lib/ocr'
 import { BUCKET, call, supabase } from '../../lib/supabase'
 import { dHash, shrinkIfLarge } from '../../lib/image'
 import { useDesktop } from '../../lib/layout'
@@ -55,9 +57,46 @@ export function Upload() {
       const up = await supabase.storage.from(BUCKET).upload(path, file, { contentType: file.type, upsert: false })
       if (up.error) throw new Error('Upload failed. Check your connection and try again.')
       setStep('reading')
-      const res = await call<{ invoice_id: string; note: string | null }>('extract-invoice', { path, image_hash })
+      const res = await call<{ invoice_id: string; note: string | null; source?: string; fields?: Record<string, unknown> }>('extract-invoice', { path, image_hash })
+
+      let note = res.note
+      let fallbackFields = null
+      let fallbackConfidence = null
+      let fallbackBuyerId = null
+
+      // If Gemini failed or fell back to manual, run local OCR fallback while keeping the scanning animation active
+      if (res.source === 'manual' || !res.fields?.invoice_no) {
+        try {
+          const buyersMap = await parties(true).catch(() => new Map())
+          const buyers = [...buyersMap.values()].filter((p) => p.type === 'buyer')
+          const ocrRes = await extractInvoiceLocally(file, buyers)
+          fallbackFields = ocrRes.fields
+          fallbackConfidence = ocrRes.confidence
+          fallbackBuyerId = ocrRes.buyer_id
+          note = null
+
+          if (res.invoice_id) {
+            await call('extract-invoice', {
+              invoice_id: res.invoice_id,
+              ocr_fields: ocrRes.fields,
+              ocr_confidence: ocrRes.confidence,
+              buyer_id: ocrRes.buyer_id,
+            }).catch((err) => console.warn('Could not persist OCR fields:', err))
+          }
+        } catch (ocrErr) {
+          console.warn('Local OCR fallback error:', ocrErr)
+        }
+      }
+
       buzz()
-      nav(`/s/review/${res.invoice_id}`, { state: { note: res.note } })
+      nav(`/s/review/${res.invoice_id}`, {
+        state: {
+          note,
+          fallbackFields,
+          fallbackConfidence,
+          fallbackBuyerId,
+        },
+      })
     } catch (e) { setError((e as Error).message); setStep('idle') }
   }
 

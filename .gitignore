@@ -34,6 +34,7 @@ tools/.venv/
 app/public/samples/
 app/invoseal-debug.apk
 supabase/.temp/
+tools/*sessions*.json
 
 # staged static build for `vercel deploy` (copy of app/dist)
 deploy/
