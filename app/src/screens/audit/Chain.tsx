@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { short } from '@shared/canon.ts'
 import { call, supabase } from '../../lib/supabase'
-import { onChainRoot } from '../../lib/chain'
+import { onChainRoot, RPC, type OnChain } from '../../lib/chain'
 import type { AuditRow } from '../../lib/data'
 import { Icon, Rings } from '../../ui/Icon'
 import { Badge, Btn, Card, Empty, ErrorNote, Skeleton } from '../../ui/kit'
@@ -16,7 +16,7 @@ type Report = { ok: boolean; problems: Problem[]; batches: Batch[]; count: numbe
 export function Chain() {
   const [entries, setEntries] = useState<AuditRow[] | null>(null)
   const [report, setReport] = useState<Report | null>(null)
-  const [chain, setChain] = useState<Record<number, { root?: string; block?: number; error?: string }>>({})
+  const [chain, setChain] = useState<Record<number, OnChain>>({})
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -81,13 +81,17 @@ export function Chain() {
                 : !report.batches.length ? <Empty icon="link" title="No batches anchored yet">Run <code>npm --prefix chain run anchor</code> on the anchor laptop.</Empty> : (
                   <Stagger className="space-y-2">
                     {report.batches.map((b) => {
-                      const c = chain[b.batch_no], onChain = c?.root ? c.root === b.merkle_root : null
+                      const c = chain[b.batch_no], onChain = c?.kind === 'ok' ? c.root === b.merkle_root : null
                       return (
                         <StaggerItem key={b.batch_no} className="rounded-2xl bg-ground p-3.5 text-sm">
                           <div className="flex flex-wrap items-center gap-2"><b>Batch #{b.batch_no}</b><span className="text-muted">#{b.from_seq}–#{b.to_seq} · {b.leaf_count} entries · block {b.block_number}</span></div>
                           <div className="mt-2 flex flex-wrap gap-1.5"><Badge tone={b.matches_db ? 'ok' : 'bad'}>{b.matches_db ? 'log matches root' : 'log changed'}</Badge>{onChain !== null && <Badge tone={onChain ? 'ok' : 'bad'}>{onChain ? 'root matches on-chain' : 'differs from chain'}</Badge>}</div>
                           <code className="mt-1.5 block font-mono text-xs text-muted">root {short(b.merkle_root)}</code>
-                          {c?.error && <p className="mt-1 text-xs text-warn">{c.error}</p>}
+                          {c?.kind === 'ok' && <p className="mt-1 text-xs text-muted">read from block {c.block} on {RPC.replace(/^https?:\/\//, '')}</p>}
+                          {c?.kind === 'remote' && <p className="mt-1 text-xs text-muted"><Badge tone="neutral">on-chain check: anchor laptop</Badge> The chain is a local Hardhat node, so only the laptop running it can read it. There, open <code>localhost:5173</code> or run <code>npm --prefix chain run verify</code>.</p>}
+                          {c?.kind === 'missing' && <p className="mt-1 text-xs text-warn">This transaction isn't on the chain at {RPC.replace(/^https?:\/\//, '')}: the local chain was restarted (it keeps nothing) or the batch was anchored on another laptop. After a restart, anchor again.</p>}
+                          {c?.kind === 'down' && <p className="mt-1 text-xs text-warn">No chain is running at {RPC.replace(/^https?:\/\//, '')}. Start it with <code>npm --prefix chain run node</code>.</p>}
+                          {c?.kind === 'no-event' && <p className="mt-1 text-xs text-bad">That transaction exists but wrote no anchor: the root can't be confirmed.</p>}
                         </StaggerItem>
                       )
                     })}
