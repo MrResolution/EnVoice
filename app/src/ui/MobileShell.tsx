@@ -85,11 +85,11 @@ export function TopBar({ back, title, subtitle, action }: { back?: ReactNode; ti
     )
   }
   return (
-    <header className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(1rem,env(safe-area-inset-top))]">
+    <header className="flex items-center justify-between gap-3 px-4 pb-2 pt-[max(2.5rem,calc(env(safe-area-inset-top)+0.75rem))]">
       <div className="w-12">{back}</div>
-      <div className="min-w-0 text-center">
-        <h1 className="truncate text-lg font-bold">{title}</h1>
-        {subtitle && <p className="truncate text-[13px] text-muted">{subtitle}</p>}
+      <div className="min-w-0 flex-1 text-center">
+        <h1 className="truncate text-base font-bold text-ink">{title}</h1>
+        {subtitle && <p className="truncate text-xs text-muted">{subtitle}</p>}
       </div>
       <div className="flex w-12 justify-end">{action}</div>
     </header>

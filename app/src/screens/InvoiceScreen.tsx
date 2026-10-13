@@ -58,7 +58,7 @@ export function InvoiceScreen() {
 
       <AnimatePresence mode="wait">
         {checking ? (
-          <CheckingRun key="run" d={d} />
+          <CheckingRun key="run" d={d} onSkip={() => setChecking(false)} />
         ) : desktop ? (
           /* DESKTOP SPLIT VIEW */
           <motion.div key="desk-body" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
@@ -164,18 +164,27 @@ export function InvoiceScreen() {
 }
 
 /** The moment after submit: the checks tick through one by one, then the result appears. */
-function CheckingRun({ d }: { d: Detail }) {
+function CheckingRun({ d, onSkip }: { d: Detail; onSkip: () => void }) {
   const names = d.checks.length ? d.checks : Array.from({ length: 21 }, (_, i) => ({ id: String(i), name: 'Check', status: 'pass' as const }))
   return (
-    <motion.section exit={{ opacity: 0, scale: 0.98 }} className="mx-4 overflow-hidden rounded-[28px] bg-ink p-6 text-white max-w-2xl" aria-live="polite">
-      <div className="flex items-center gap-3">
-        <span className="h-6 w-6 animate-spin rounded-full border-[3px] border-lime border-t-transparent" />
-        <div><div className="text-lg font-bold">Running {names.length} checks</div><div className="text-xs text-soft">PO, delivery, duplicates, bank, document, behaviour</div></div>
+    <motion.section exit={{ opacity: 0, scale: 0.98 }} className="mx-4 overflow-hidden rounded-[28px] bg-ink p-5 sm:p-6 text-white max-w-2xl shadow-xl" aria-live="polite">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <span className="h-6 w-6 animate-spin rounded-full border-[3px] border-lime border-t-transparent shrink-0" />
+          <div>
+            <div className="text-base sm:text-lg font-bold">Running {names.length} checks</div>
+            <div className="text-xs text-soft">PO, delivery, duplicates, bank, document, behaviour</div>
+          </div>
+        </div>
+        <button type="button" onClick={onSkip} className="rounded-xl bg-ink-2 px-3 py-1.5 text-xs font-bold text-lime hover:bg-ink-3 transition shrink-0">
+          Skip →
+        </button>
       </div>
-      <motion.ul className="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-2" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.06 } } }}>
+      <motion.ul className="mt-4 grid grid-cols-2 gap-x-3 gap-y-2 max-h-[55vh] overflow-y-auto thin-scroll pr-1" initial="h" animate="s" variants={{ s: { transition: { staggerChildren: 0.04 } } }}>
         {names.slice(0, 21).map((c) => (
-          <motion.li key={c.id} variants={{ h: { opacity: 0, x: -8 }, s: { opacity: 1, x: 0 } }} className="flex items-center gap-2.5 text-xs">
-            <Dot status={c.status} /><span className="text-soft truncate">{c.name}</span>
+          <motion.li key={c.id} variants={{ h: { opacity: 0, x: -6 }, s: { opacity: 1, x: 0 } }} className="flex items-center gap-2 text-xs min-w-0">
+            <Dot status={c.status} />
+            <span className="text-soft truncate text-[11px] font-medium">{c.name}</span>
           </motion.li>
         ))}
       </motion.ul>

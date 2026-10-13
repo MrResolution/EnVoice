@@ -30,20 +30,33 @@ function base64(bytes: Uint8Array): string {
 }
 
 /** The raw parsed reply, or throws (no key, HTTP error, 429, timeout, bad JSON). The caller falls back to manual entry. */
-export async function geminiExtract(bytes: Uint8Array, mime: string, apiKey: string, model = 'gemini-flash-latest'): Promise<unknown> {
-  const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-    signal: AbortSignal.timeout(20_000),
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: SYSTEM }] },
-      contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: base64(bytes) } }, { text: 'Extract the invoice fields.' }] }],
-      generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: SCHEMA },
-    }),
-  })
-  if (!res.ok) throw new Error(`Gemini HTTP ${res.status}`)
-  const body = await res.json()
-  const textOut = body?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('')
-  if (!textOut) throw new Error('Gemini returned no text')
-  return JSON.parse(textOut)
+export async function geminiExtract(bytes: Uint8Array, mime: string, apiKey: string, model = 'gemini-1.5-flash'): Promise<unknown> {
+  const modelsToTry = [model, 'gemini-1.5-flash', 'gemini-2.0-flash']
+  let lastError: Error | null = null
+  for (const m of [...new Set(modelsToTry)]) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(apiKey)}`
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        signal: AbortSignal.timeout(8_000),
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM }] },
+          contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: base64(bytes) } }, { text: 'Extract the invoice fields.' }] }],
+          generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: SCHEMA },
+        }),
+      })
+      if (!res.ok) {
+        lastError = new Error(`Gemini (${m}) HTTP ${res.status}: ${await res.text().catch(() => '')}`)
+        continue
+      }
+      const body = await res.json()
+      const textOut = body?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('')
+      if (!textOut) throw new Error('Gemini returned no text')
+      return JSON.parse(textOut)
+    } catch (err) {
+      lastError = err as Error
+    }
+  }
+  throw lastError ?? new Error('Gemini extraction failed')
 }
