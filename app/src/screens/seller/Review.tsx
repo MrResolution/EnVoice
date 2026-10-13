@@ -93,7 +93,16 @@ export function Review() {
   const ai = inv?.ai_fields as Record<string, unknown> | null
   const edited = (k: Key) => Boolean(ai) && inv?.ai_source !== 'manual' && norm(ai![k]) !== norm(form?.[k]) && !(Number(ai![k]) === Number(norm(form?.[k])) && norm(form?.[k]) !== '')
   const buyer = buyers.find((b) => b.id === buyerId)
-  const shownBuyers = useMemo(() => buyers.filter((b) => b.name.toLowerCase().includes(query.toLowerCase())), [buyers, query])
+  const shownBuyers = useMemo(
+    () =>
+      buyers.filter(
+        (b) =>
+          b.name.toLowerCase().includes(query.toLowerCase()) ||
+          (b.city && b.city.toLowerCase().includes(query.toLowerCase())) ||
+          (b.upi_id && b.upi_id.toLowerCase().includes(query.toLowerCase())),
+      ),
+    [buyers, query],
+  )
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -250,7 +259,7 @@ export function Review() {
             {buyer ? <Avatar name={buyer.name} dark /> : <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-warn-soft text-warn"><Icon name="building" /></span>}
             <span className="flex-1 min-w-0">
               <span className="block text-xs text-muted">{buyer ? (inv.buyer_id === buyerId ? 'Matched buyer · verified' : 'Selected buyer') : 'Required'}</span>
-              <span className="block text-sm font-bold text-ink truncate">{buyer?.name ?? 'Choose buyer from directory →'}</span>
+              <span className="block text-sm font-bold text-ink truncate">{buyer ? `${buyer.name} (${buyer.upi_id})` : 'Choose buyer from directory →'}</span>
             </span>
             <span className="rounded-xl bg-ground px-3 py-1.5 text-xs font-bold text-ink">Change</span>
           </motion.button>
@@ -271,7 +280,7 @@ export function Review() {
       <Sheet open={sheet === 'buyer'} onClose={() => setSheet(null)} title="Select invoice buyer">
         <label className="mb-3 flex h-11 items-center gap-2 rounded-full bg-ground px-4">
           <Icon name="search" size={16} className="text-muted" />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search buyers by name or city" className="flex-1 bg-transparent text-sm outline-none" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search by name, city, or UPI ID (e.g. peacock@invopay)" className="flex-1 bg-transparent text-sm outline-none" />
         </label>
         <ul className="max-h-[50vh] space-y-1 overflow-y-auto thin-scroll">
           {shownBuyers.map((b) => (
@@ -280,7 +289,7 @@ export function Review() {
                 <Avatar name={b.name} dark={b.id === buyerId} />
                 <span className="flex-1 min-w-0">
                   <span className="block font-bold text-sm truncate">{b.name}</span>
-                  {b.city && <span className={`block text-xs ${b.id === buyerId ? 'text-soft' : 'text-muted'}`}>{b.city}</span>}
+                  <span className={`block text-xs ${b.id === buyerId ? 'text-lime font-mono' : 'text-muted'}`}>{b.upi_id} {b.city ? `· ${b.city}` : ''}</span>
                 </span>
                 {b.id === buyerId && <Icon name="check" size={16} stroke="var(--color-lime)" />}
               </button>

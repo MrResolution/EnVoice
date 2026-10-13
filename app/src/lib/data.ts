@@ -19,7 +19,24 @@ export type CheckRow = { id: string; position: number; name: string; category: s
 export type OfferRow = { invoice_id: string; advance_pct: number; advance_amount: number; fee_amount: number; reasons: string[]; status: 'released' | 'accepted'; accepted_at: string | null; created_at: string }
 export type PoRow = { id: string; po_number: string; buyer_id: string; supplier_id: string; item: string; qty: number; unit_price: number; tax_rate: number; total: number; po_date: string; delivery_receipts: { grn_number: string; qty_delivered: number; delivered_on: string }[] }
 export type AuditRow = { seq: number; invoice_id: string | null; event_type: string; payload: { summary: string; file_hash: string | null; record_hash: string | null }; payload_hash: string; prev_hash: string; entry_hash: string; ts: string }
-export type Party = { id: string; type: 'supplier' | 'buyer'; name: string; city?: string | null }
+export type Party = { id: string; type: 'supplier' | 'buyer'; name: string; city?: string | null; upi_id: string }
+
+export function toUpiId(name?: string | null, email?: string | null): string {
+  if (!name && !email) return 'business@invopay'
+  const n = (name || '').toLowerCase().trim()
+  if (n.includes('ravi')) return 'ravi@invopay'
+  if (n.includes('peacock')) return 'peacock@invopay'
+  if (n.includes('kaveri')) return 'kaveri@invopay'
+  if (n.includes('banyan')) return 'banyan@invopay'
+  if (n.includes('lotus')) return 'lotus@invopay'
+  if (n.includes('newleaf')) return 'newleaf@invopay'
+  if (email && email.includes('@')) {
+    const handle = email.split('@')[0].toLowerCase().replace(/[^a-z0-9._-]/g, '')
+    return `${handle}@invopay`
+  }
+  const clean = n.replace(/[^a-z0-9]/g, '')
+  return `${clean || 'user'}@invopay`
+}
 
 /** numeric columns arrive as strings from PostgREST; the screens want numbers. */
 export function toInvoice(r: Record<string, unknown>): InvoiceRow {
@@ -32,7 +49,7 @@ let partyCache: Promise<Map<string, Party>> | null = null
 export function parties(fresh = false): Promise<Map<string, Party>> {
   if (fresh) partyCache = null
   partyCache ??= Promise.resolve(supabase.from('parties').select('id, type, name, city').order('name'))
-    .then(({ data }) => new Map((data ?? []).map((p) => [p.id, p as Party])))
+    .then(({ data }) => new Map((data ?? []).map((p) => [p.id, { ...p, upi_id: toUpiId(p.name) } as Party])))
   return partyCache
 }
 

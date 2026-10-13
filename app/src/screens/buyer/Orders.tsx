@@ -42,12 +42,16 @@ export function Orders() {
               <tbody className="divide-y divide-line">
                 {rows.map((po) => {
                   const rec = po.delivery_receipts[0]
-                  const supplierName = names.get(po.supplier_id)?.name ?? 'Supplier'
+                  const supplierObj = names.get(po.supplier_id)
+                  const supplierName = supplierObj?.name ?? 'Supplier'
                   return (
                     <tr key={po.id} className="hover:bg-ground/60 transition-colors">
                       <td className="py-3.5 pl-2 font-bold text-ink">{po.po_number}</td>
                       <td className="py-3.5 text-xs text-muted">{day(po.po_date)}</td>
-                      <td className="py-3.5 text-ink-3 font-semibold">{supplierName}</td>
+                      <td className="py-3.5 text-ink-3">
+                        <div className="font-semibold">{supplierName}</div>
+                        {supplierObj?.upi_id && <div className="text-[11px] font-mono text-muted">{supplierObj.upi_id}</div>}
+                      </td>
                       <td className="py-3.5 text-xs text-muted">
                         <span className="font-bold text-ink">{fmtQty(po.qty)}</span> × {po.item}
                       </td>
@@ -83,12 +87,18 @@ export function Orders() {
           <Stagger className="space-y-2.5">
             {rows.map((po) => {
               const rec = po.delivery_receipts[0]
+              const s = names.get(po.supplier_id)
               return (
                 <StaggerItem key={po.id}>
                   <Card className="p-3.5">
                     <div className="flex items-center gap-3">
-                      <Avatar name={names.get(po.supplier_id)?.name ?? 'S'} />
-                      <span className="min-w-0 flex-1"><span className="block text-[15px] font-bold">{po.po_number}</span><span className="block truncate text-xs text-muted">{names.get(po.supplier_id)?.name} · {fmtQty(po.qty)} × {po.item}</span></span>
+                      <Avatar name={s?.name ?? 'S'} />
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[15px] font-bold">{po.po_number}</span>
+                        <span className="block truncate text-xs text-muted">
+                          {s?.name}{s?.upi_id ? ` (${s.upi_id})` : ''} · {fmtQty(po.qty)} × {po.item}
+                        </span>
+                      </span>
                       <span className="font-bold">{inr(po.total)}</span>
                     </div>
                     <div className="mt-3 flex items-center justify-between border-t border-line pt-3 text-[13px]">
@@ -147,7 +157,7 @@ export function NewPO() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   useEffect(() => { parties(true).then((m) => setSuppliers([...m.values()].filter((p) => p.type === 'supplier'))) }, [])
-  const shown = useMemo(() => suppliers.filter((s) => s.name.toLowerCase().includes(q.toLowerCase())), [suppliers, q])
+  const shown = useMemo(() => suppliers.filter((s) => s.name.toLowerCase().includes(q.toLowerCase()) || (s.upi_id && s.upi_id.toLowerCase().includes(q.toLowerCase()))), [suppliers, q])
   const net = round2((Number(f.qty) || 0) * (Number(f.unit_price) || 0))
   const gst = round2(net * (Number(f.tax_rate) || 0) / 100)
 
@@ -167,15 +177,21 @@ export function NewPO() {
       <form onSubmit={submit} className={desktop ? 'max-w-4xl space-y-5' : 'space-y-3 px-[18px]'}>
         {/* Supplier Selector */}
         <Card className="p-5 border border-line space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-ink">Choose supplier</span>
+            <span className="text-[11px] text-muted">Search by name or UPI ID</span>
+          </div>
           <label className="flex h-11 items-center gap-2.5 rounded-full bg-ground px-4">
             <Icon name="search" size={18} className="text-muted" />
-            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Find a supplier from directory" aria-label="Find a supplier" className="flex-1 bg-transparent text-sm outline-none" />
+            <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name or UPI ID (e.g. ravi@invopay)" aria-label="Find a supplier" className="flex-1 bg-transparent text-sm outline-none" />
           </label>
           <div className="flex gap-2 overflow-x-auto no-scrollbar pt-1">
             {shown.map((s) => (
               <button type="button" key={s.id} onClick={() => setSel(s.id)} className="relative min-h-10 shrink-0 rounded-full px-4 text-xs font-semibold">
                 {sel === s.id ? <motion.span layoutId="po-sup" transition={spring} className="absolute inset-0 rounded-full bg-ink" /> : <span className="absolute inset-0 rounded-full bg-ground" />}
-                <span className={`relative ${sel === s.id ? 'font-bold text-white' : 'text-ink'}`}>{s.name}</span>
+                <span className={`relative ${sel === s.id ? 'font-bold text-white' : 'text-ink'}`}>
+                  {s.name} <span className="text-[10px] opacity-75 font-mono">({s.upi_id})</span>
+                </span>
               </button>
             ))}
           </div>

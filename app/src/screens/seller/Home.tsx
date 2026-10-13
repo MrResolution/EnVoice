@@ -123,14 +123,18 @@ export function SellerHome() {
                 <tbody className="divide-y divide-line">
                   {rows.slice(0, 8).map((inv) => {
                     const o = offers?.find((x) => x.invoice_id === inv.id)
-                    const buyerName = names.get(inv.buyer_id ?? '')?.name ?? 'Buyer not chosen'
+                    const buyerObj = names.get(inv.buyer_id ?? '')
+                    const buyerName = buyerObj?.name ?? 'Buyer not chosen'
                     const to = inv.status === 'extracted' ? `/s/review/${inv.id}` : `/s/invoice/${inv.id}`
                     return (
                       <tr key={inv.id} className="hover:bg-ground/60 transition-colors">
                         <td className="py-3.5 pl-2 font-bold text-ink">
                           <Link to={to} className="hover:underline">{inv.invoice_no ?? 'Draft'}</Link>
                         </td>
-                        <td className="py-3.5 text-ink-3">{buyerName}</td>
+                        <td className="py-3.5 text-ink-3">
+                          <div className="font-medium">{buyerName}</div>
+                          {buyerObj?.upi_id && <div className="text-[11px] font-mono text-muted">{buyerObj.upi_id}</div>}
+                        </td>
                         <td className="py-3.5 text-xs text-muted">{day(inv.invoice_date ?? inv.created_at)}</td>
                         <td className="py-3.5 text-right font-bold text-ink">{inr(inv.amount)}</td>
                         <td className="py-3.5 pl-4">
@@ -219,9 +223,10 @@ export function SellerHome() {
               <Stagger className="space-y-2.5">
                 {rows.slice(0, 6).map((inv) => {
                   const o = offers?.find((x) => x.invoice_id === inv.id)
+                  const b = names.get(inv.buyer_id ?? '')
                   return (
                     <StaggerItem key={inv.id}>
-                      <InvoiceRowCard inv={inv} name={names.get(inv.buyer_id ?? '')?.name ?? 'Buyer not chosen'} to={inv.status === 'extracted' ? `/s/review/${inv.id}` : `/s/invoice/${inv.id}`}
+                      <InvoiceRowCard inv={inv} name={b?.name ?? 'Buyer not chosen'} upi_id={b?.upi_id} to={inv.status === 'extracted' ? `/s/review/${inv.id}` : `/s/invoice/${inv.id}`}
                         money={o ? { value: inr(o.advance_amount), note: o.status === 'accepted' ? `paid out · ${o.advance_pct}%` : `offer · ${o.advance_pct}%`, tone: 'ok' }
                           : inv.status === 'review' ? { value: inr(inv.amount), note: `risk ${inv.risk_score} · review`, tone: 'warn' } : undefined} />
                     </StaggerItem>
