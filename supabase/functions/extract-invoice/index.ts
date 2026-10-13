@@ -12,6 +12,25 @@ const MAX = 5 * 1024 * 1024
 const LABEL: Record<AiSource, string> = { reuse: 'same file read before', cache: 'cached AI result', gemini: 'read by Gemini', manual: 'typed by hand' }
 
 handle(['supplier'], async (body, caller, db) => {
+  // If updating an extracted invoice with local OCR fallback fields:
+  if (body.invoice_id && body.ocr_fields) {
+    const invId = String(body.invoice_id)
+    const existing = await must(db.from('invoices').select('id, supplier_id, status, file_hash').eq('id', invId).eq('supplier_id', caller.party_id!).maybeSingle(), 'Invoice')
+    if (existing.status !== 'extracted') throw new HttpError(409, 'This invoice is already processed.')
+    const buyers = await must(db.from('parties').select('id, name, gstin').eq('type', 'buyer'), 'Buyers')
+    const ocrClean = cleanFields(body.ocr_fields)
+    const buyerId = (body.buyer_id as string | undefined) ?? matchBuyer(ocrClean, buyers)
+    const conf = confidence(body.ocr_fields) ?? 0.85
+    await must(db.from('invoices').update({
+      ...ocrClean, buyer_id: buyerId, ai_fields: ocrClean, ai_source: 'manual', ai_confidence: conf,
+    }).eq('id', invId).select('id').single(), 'Update with OCR fallback')
+    await appendAudit(db, {
+      invoice_id: invId, event_type: 'fields_extracted', file_hash: existing.file_hash, actor_id: caller.id,
+      summary: `fields read by local OCR fallback · ${Math.round(conf * 100)}% confident`,
+    })
+    return { invoice_id: invId, buyer_id: buyerId, source: 'manual', confidence: conf, fields: ocrClean, note: null }
+  }
+
   const path = String(body.path ?? '')
   if (!new RegExp(`^${caller.party_id}/[0-9a-f-]{36}\\.(pdf|png|jpe?g|webp)$`).test(path)) throw new HttpError(400, 'Upload the file into your own folder first.')
 
@@ -42,8 +61,14 @@ handle(['supplier'], async (body, caller, db) => {
       const raw = await geminiExtract(bytes, type, key, Deno.env.get('GEMINI_MODEL') || undefined)
       source = 'gemini'; fields = cleanFields(raw); conf = confidence(raw)
     } catch (e) {
-      console.warn('extraction fell back to manual:', (e as Error).message)
-      note = 'The AI reader is unavailable right now. Please type the fields from the document.'
+      console.warn('extraction fell back to manual/OCR:', (e as Error).message)
+      if (body.ocr_fields) {
+        source = 'manual'
+        fields = cleanFields(body.ocr_fields)
+        conf = confidence(body.ocr_fields) ?? 0.85
+      } else {
+        note = 'The AI reader is unavailable right now. Please type the fields from the document.'
+      }
     }
   }
 

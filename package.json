@@ -16,6 +16,7 @@
   "devDependencies": {
     "@supabase/supabase-js": "2.117.3",
     "bcryptjs": "3.0.3",
+    "puppeteer-core": "^25.13.0",
     "vitest": "5.0.4"
   }
 }

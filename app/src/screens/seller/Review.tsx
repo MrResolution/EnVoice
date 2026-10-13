@@ -28,7 +28,13 @@ export function Review() {
   const { id } = useParams()
   const nav = useNavigate()
   const desktop = useDesktop()
-  const note = (useLocation().state as { note?: string } | null)?.note
+  const locationState = useLocation().state as {
+    note?: string
+    fallbackFields?: Record<string, unknown>
+    fallbackConfidence?: number
+    fallbackBuyerId?: string
+  } | null
+  const note = locationState?.note
   const [inv, setInv] = useState<InvoiceRow | null>(null)
   const [form, setForm] = useState<Record<Key, string> | null>(null)
   const [lines, setLines] = useState<Line[]>([])
@@ -44,15 +50,27 @@ export function Review() {
       if (!data) return setError('Invoice not found.')
       const row = toInvoice(data)
       if (row.status !== 'extracted') return nav(`/s/invoice/${row.id}`, { replace: true })
-      setInv(row); setBuyerId(row.buyer_id ?? '')
-      setForm(Object.fromEntries(FIELDS.map(([k]) => [k, str(row[k as keyof InvoiceRow])])) as Record<Key, string>)
-      setLines((row.line_items ?? []).map((l) => ({ description: l.description, hsn: str(l.hsn), qty: str(l.qty), unit_price: str(l.unit_price), amount: str(l.amount) })))
+      const fallback = locationState?.fallbackFields
+      const eff: Record<string, unknown> = { ...row }
+      if (fallback) {
+        for (const [k, v] of Object.entries(fallback)) {
+          if (eff[k] === null || eff[k] === undefined || eff[k] === '' || (Array.isArray(eff[k]) && (eff[k] as unknown[]).length === 0)) {
+            eff[k] = v
+          }
+        }
+      }
+      setInv(row); setBuyerId(row.buyer_id ?? locationState?.fallbackBuyerId ?? '')
+      setForm(Object.fromEntries(FIELDS.map(([k]) => [k, str(eff[k as keyof InvoiceRow])])) as Record<Key, string>)
+      const rawLines = (eff.line_items ?? []) as Array<{ description: string; hsn?: unknown; qty: unknown; unit_price: unknown; amount: unknown }>
+      setLines(rawLines.map((l) => ({ description: l.description, hsn: str(l.hsn), qty: str(l.qty), unit_price: str(l.unit_price), amount: str(l.amount) })))
     })
     parties(true).then((m) => setBuyers([...m.values()].filter((p) => p.type === 'buyer')))
   }, [id, nav])
 
-  const ai = inv?.ai_fields as Record<string, unknown> | null
-  const edited = (k: Key) => Boolean(ai) && inv?.ai_source !== 'manual' && norm(ai![k]) !== norm(form?.[k]) && !(Number(ai![k]) === Number(norm(form?.[k])) && norm(form?.[k]) !== '')
+  const hasFallback = Boolean(locationState?.fallbackFields)
+  const isLocalOcr = (inv?.ai_source === 'manual' && Boolean(inv?.ai_fields)) || hasFallback
+  const ai = (inv?.ai_fields ?? locationState?.fallbackFields) as Record<string, unknown> | null
+  const edited = (k: Key) => Boolean(ai) && norm(ai![k]) !== norm(form?.[k]) && !(Number(ai![k]) === Number(norm(form?.[k])) && norm(form?.[k]) !== '')
   const buyer = buyers.find((b) => b.id === buyerId)
   const shownBuyers = useMemo(() => buyers.filter((b) => b.name.toLowerCase().includes(query.toLowerCase())), [buyers, query])
 
@@ -78,11 +96,12 @@ export function Review() {
     )
   }
 
-  const pct = inv.ai_confidence !== null ? Math.round(inv.ai_confidence * 100) : null
+  const pct = inv.ai_confidence !== null ? Math.round(inv.ai_confidence * 100) : (locationState?.fallbackConfidence ? Math.round(locationState.fallbackConfidence * 100) : null)
+  const sourceText = isLocalOcr ? 'Read by Local AI' : SOURCE[inv.ai_source]
 
   return (
     <Page className="space-y-5">
-      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Verify invoice fields" subtitle={inv.ai_source === 'manual' ? 'Enter document fields manually' : 'AI extracted fields automatically · Please confirm details before running checks'} />
+      <TopBar back={<RoundBtn icon="back" label="Back" to="/s" />} title="Verify invoice fields" subtitle={inv.ai_source === 'manual' && !isLocalOcr ? 'Enter document fields manually' : 'AI extracted fields automatically · Please confirm details before running checks'} />
 
       {note && <div role="status" className="rounded-2xl bg-warn-soft px-4 py-3 text-sm font-medium text-warn">{note}</div>}
 
@@ -110,7 +129,9 @@ export function Review() {
               <Rings className="-bottom-12 -right-10 h-32 w-32" />
               <DocThumb path={inv.file_path} type={inv.file_type} />
               <span className="relative flex-1">
-                <Badge tone={inv.ai_source === 'manual' || (pct !== null && pct < 80) ? 'warn' : 'lime'}>{SOURCE[inv.ai_source]}{pct !== null && inv.ai_source !== 'manual' ? ` · ${pct}% confidence` : ''}</Badge>
+                <Badge tone={!isLocalOcr && inv.ai_source === 'manual' ? 'warn' : (pct !== null && pct < 80) ? 'warn' : 'lime'}>
+                  {sourceText}{pct !== null && (!isLocalOcr ? inv.ai_source !== 'manual' : true) ? ` · ${pct}% confidence` : ''}
+                </Badge>
                 <span className="mt-2 block text-[26px] font-bold">{form.amount ? inr(Number(norm(form.amount))) : '₹ —'}</span>
                 <span className="block text-xs text-soft">total · fingerprint {short(inv.file_hash)} · tap to view</span>
               </span>
@@ -121,8 +142,8 @@ export function Review() {
           {desktop && (
             <div className="flex items-center justify-between rounded-2xl bg-ink p-4 text-white">
               <div>
-                <Badge tone={inv.ai_source === 'manual' || (pct !== null && pct < 80) ? 'warn' : 'lime'}>
-                  {SOURCE[inv.ai_source]} {pct !== null && inv.ai_source !== 'manual' ? `(${pct}% confidence)` : ''}
+                <Badge tone={!isLocalOcr && inv.ai_source === 'manual' ? 'warn' : (pct !== null && pct < 80) ? 'warn' : 'lime'}>
+                  {sourceText} {pct !== null && (!isLocalOcr ? inv.ai_source !== 'manual' : true) ? `(${pct}% confidence)` : ''}
                 </Badge>
                 <div className="mt-1 text-xs text-soft">Review values below against the document on the left.</div>
               </div>
