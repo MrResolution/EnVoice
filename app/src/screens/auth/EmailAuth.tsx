@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { supabase } from '../../lib/supabase'
+import { signInWithGoogle } from '../../lib/oauth'
 import { Btn, ErrorNote, RoundBtn } from '../../ui/kit'
 import { spring } from '../../ui/motion'
 
@@ -41,8 +42,14 @@ export function EmailAuth() {
       <div className="flex min-h-dvh w-full max-w-[460px] flex-col bg-ground px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:min-h-[820px] sm:rounded-[40px] sm:shadow-[0_30px_80px_-30px_rgba(18,20,22,0.45)]">
         <div className="flex items-center justify-between"><RoundBtn icon="back" label="Back" to="/welcome" /><span /></div>
         <h1 className="mt-6 text-[30px] font-extrabold leading-tight tracking-[-0.03em]">{lender ? 'Lender sign in' : mode === 'in' ? 'Welcome back' : 'Create your account'}</h1>
-        <p className="mt-1 text-sm text-muted">{lender ? 'Opens the lender dashboard: review queue, portfolio and audit chain. Lender accounts are invite-only; the demo lender is filled in.' : mode === 'in' ? 'Sign in with your email and password.' : 'Then tell us if you sell or buy. No KYC in this prototype.'}</p>
+        <p className="mt-1 text-sm text-muted">{lender ? 'Opens the lender dashboard: review queue, portfolio and audit chain. Sign in with Google (new lenders choose "I lend money"), or use the demo lender filled in below.' : mode === 'in' ? 'Sign in with your email and password.' : 'Then tell us if you sell or buy. No KYC in this prototype.'}</p>
 
+        {lender && (
+          <motion.button type="button" whileTap={{ scale: 0.97 }} onClick={() => signInWithGoogle().catch((e) => setError((e as Error).message))}
+            className="mt-5 flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-ink text-base font-bold text-white">
+            Continue with Google <span className="text-xs font-medium text-soft">· then choose "I lend money"</span>
+          </motion.button>
+        )}
         <div role="tablist" className="relative mt-5 grid grid-cols-2 rounded-full bg-white p-1">
           {(['in', 'up'] as const).map((m) => (
             <button key={m} role="tab" aria-selected={mode === m} onClick={() => { setMode(m); setError(null) }} className="relative h-11 rounded-full text-sm font-semibold">

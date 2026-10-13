@@ -17,8 +17,9 @@ rules decide, and every step is recorded in a tamper-evident audit chain anchore
 Demo accounts (all `@invoseal.test`, one shared demo password kept by the team in `.env.local`):
 `ravi`, `kaveri` (sellers) · `peacock`, `banyan` (buyers) · `lender` · `auditor`.
 
-New accounts: after signing in you choose **I sell goods** or **I buy goods** and enter a business name, an optional
-GSTIN, a bank account (made-up is fine) and a city. Two accounts with the same company email domain, GSTIN, bank account,
+New accounts: after signing in (Google or email) you choose **I sell goods**, **I buy goods** or **I lend money**.
+Sellers and buyers enter a business name, an optional GSTIN, a bank account (made-up is fine) and a city; lenders enter
+a lending company name and land on the web dashboard. Two accounts with the same company email domain, GSTIN, bank account,
 phone or address are flagged as possible self-dealing, so use different made-up details for seller and buyer.
 
 ---
@@ -86,7 +87,8 @@ phone or address are flagged as possible self-dealing, so use different made-up 
 
 ## Lender web dashboard
 
-**Open it:** https://invoseal.vercel.app → **I'm a lender** (lender account filled in) → type the demo password → `/#/l`.
+**Open it:** https://invoseal.vercel.app → **I'm a lender** → **Continue with Google** (first time: choose *I lend money*
+and name your lending company), or sign in as the demo lender → dashboard at `/#/l`.
 **Pages:** Review queue · Portfolio · Audit chain (best on a laptop; works on a phone too)
 
 - **Key numbers:** advanced so far, needs review, waiting for buyers, blocked by rules (all live).

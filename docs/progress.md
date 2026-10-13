@@ -55,6 +55,9 @@
 - Google provider ON (client in .env.local as GOOGLE_CLIENT_ID/SECRET, pushed via config.toml env()). Verified on
   invoseal.vercel.app: Google → back → onboarding. Rotate the secret after the event (it was pasted in chat).
 
+- Lenders can now self-onboard (Google or email → "I lend money" → company name). Prototype trade-off: any lender
+  sees every submitted invoice; a real platform would invite and verify lenders. Auditors stay seeded.
+
 ## Next steps
 1. Click through every role in the app (browser pane / phone) and fix UI issues.
 2. User: set Edge Function secret `GEMINI_API_KEY` (new key) for live AI on non-sample files.

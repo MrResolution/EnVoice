@@ -1,6 +1,7 @@
-// First sign-in (Google or email): the user picks seller or buyer and names their business.
-// Creates their party and profile. No KYC: this is a prototype with made-up business details.
-// Lender and auditor are never self-assigned; those accounts are seeded.
+// First sign-in (Google or email): the user picks seller, buyer or lender and names their business.
+// Sellers and buyers get a party (identity used by the checks); a lender gets a profile only.
+// No KYC: prototype with made-up details. Self-serve lenders see every submitted invoice, which is
+// acceptable for mock data only; a real platform would invite and verify lenders. Auditors stay seeded.
 
 import { appendAudit, handleUser, HttpError, must } from '../_shared/db.ts'
 import { digits, gstin } from '../_shared/normalize.ts'
@@ -11,10 +12,17 @@ handleUser(async (body, user, db) => {
   const existing = await db.from('profiles').select('id').eq('id', user.id).maybeSingle()
   if (existing.data) throw new HttpError(409, 'Your account is already set up.')
 
-  const role = body.role === 'buyer' ? 'buyer' : body.role === 'supplier' ? 'supplier' : null
-  if (!role) throw new HttpError(400, 'Choose whether you sell or buy goods.')
+  const role = body.role === 'buyer' ? 'buyer' : body.role === 'supplier' ? 'supplier' : body.role === 'lender' ? 'lender' : null
+  if (!role) throw new HttpError(400, 'Choose whether you sell, buy or lend.')
   const name = text(body.business_name, 80)
-  if (name.length < 2) throw new HttpError(400, 'Enter your business name.')
+  if (name.length < 2) throw new HttpError(400, role === 'lender' ? 'Enter your lending company name.' : 'Enter your business name.')
+
+  if (role === 'lender') {
+    const person = text(body.full_name, 60) || user.name
+    await must(db.from('profiles').insert({ id: user.id, role, party_id: null, full_name: person ? `${person} · ${name}` : name }).select('id').single(), 'Profile')
+    await appendAudit(db, { invoice_id: null, event_type: 'account_created', actor_id: user.id, summary: 'lender account created' })
+    return { role, party_id: null }
+  }
   const g = gstin(text(body.gstin, 20))
   if (g && !/^[0-9]{2}[A-Z0-9]{13}$/.test(g)) throw new HttpError(400, 'A GSTIN has 15 letters and digits (or leave it empty).')
   const bank = digits(text(body.bank_account, 30))
