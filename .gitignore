@@ -15,6 +15,11 @@ app/android/local.properties
 chain/artifacts/
 chain/cache/
 chain/deployment.json
+blockchain/artifacts/
+blockchain/cache/
+blockchain/coverage/
+blockchain/types/
+blockchain/node_modules/
 tools/.venv/
 *.apk
 *.idsig

@@ -5,6 +5,8 @@
   "description": "Invoice financing checker with a hybrid audit chain (SYNESIS 26 hackathon prototype, mock data only)",
   "scripts": {
     "test": "vitest run tests/engine",
+    "test:ui": "npm --prefix app test",
+    "test:all": "npm test && npm --prefix app test && npm --prefix app run typecheck",
     "test:rls": "vitest run tests/rls",
     "seed": "node tools/gen-seed.ts",
     "e2e": "node tools/e2e.ts",

@@ -33,17 +33,17 @@ insert into auth.users (instance_id, id, aud, role, email, encrypted_password, e
   raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
   confirmation_token, recovery_token, email_change_token_new, email_change, email_change_token_current,
   phone_change, phone_change_token, reauthentication_token) values
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'ravi@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000001', 'authenticated', 'authenticated', 'ravi@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Ravi Kumar"}', now(), now(), '', '', '', '', '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'kaveri@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000002', 'authenticated', 'authenticated', 'kaveri@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Kaveri Traders desk"}', now(), now(), '', '', '', '', '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'peacock@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000003', 'authenticated', 'authenticated', 'peacock@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Peacock Retail payables"}', now(), now(), '', '', '', '', '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'banyan@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000004', 'authenticated', 'authenticated', 'banyan@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Banyan Stores payables"}', now(), now(), '', '', '', '', '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'lender@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000005', 'authenticated', 'authenticated', 'lender@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Asha Menon (lender)"}', now(), now(), '', '', '', '', '', '', '', ''),
-  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'auditor@invoseal.test', '$2b$10$kIyNJtg4ZxEhbjmH4CRuu.8P/AT2okWslWKdCC4W8.VYQpb03MqGK', now(),
+  ('00000000-0000-0000-0000-000000000000', 'e1000000-0000-4000-8000-000000000006', 'authenticated', 'authenticated', 'auditor@invoseal.test', '$2b$10$oJdgiP4TtPmlZQ/tQmfHYOMKPEuofofYjF2WMAbXp6ukRmsmkmJTq', now(),
    '{"provider":"email","providers":["email"]}', '{"full_name":"Audit desk"}', now(), now(), '', '', '', '', '', '', '', '')
 on conflict (id) do update set encrypted_password = excluded.encrypted_password;
 
