@@ -1,0 +1,22 @@
+# Only the settings Invoseal changes. `npx supabase config push --project-ref vygzqjpquizwwthhhxbd` pushes these;
+# anything not declared here is left as it is on the hosted project.
+project_id = "invoseal"
+
+[auth]
+site_url = "https://invoseal.vercel.app"
+# Web (local + Vercel) and the Android app's deep link for Google sign-in.
+additional_redirect_urls = ["http://localhost:5173/**", "https://invoseal.vercel.app/**", "test.invoseal.app://login-callback"]
+enable_signup = true
+
+[auth.email]
+enable_signup = true
+# Prototype: mock accounts, no confirmation email (the free mailer is rate-limited and slows the demo).
+enable_confirmations = false
+
+# Google sign-in. Values come from .env.local (git-ignored); push with the env loaded:
+# set -a; . ./.env.local; set +a; npx supabase config push --project-ref vygzqjpquizwwthhhxbd
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false

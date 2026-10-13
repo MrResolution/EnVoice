@@ -5,7 +5,7 @@
 import type { Category, Check, CheckResult, Ctx, Invoice, InvoiceFields, MatchValues, Status } from './types.ts'
 import {
   address, day, daysBetween, digits, emailDomain, gstin, hamming, inr, levenshtein, list, lookalike, mask, money,
-  name, overlap, pct, PUBLIC_EMAIL, qty, ref, round2, similarity,
+  name, overlap, pct, poss, PUBLIC_EMAIL, qty, ref, round2, similarity,
 } from './normalize.ts'
 import { short } from './canon.ts'
 
@@ -172,8 +172,8 @@ export const selfDealing: Check = ({ supplier, buyer }) => {
 export const bankAccount: Check = ({ invoice, supplier }) => {
   const onInvoice = digits(invoice.bank_account), approved = digits(supplier.bank_account)
   if (!onInvoice) return r('Bank account', 'vendor_bank', 'pass', `No account printed; payment goes to the approved account ${mask(approved)}.`)
-  if (onInvoice === approved) return r('Bank account', 'vendor_bank', 'pass', `Pays into ${supplier.name}'s approved account ${mask(approved)}.`)
-  return r('Bank account', 'vendor_bank', 'warn', `Bank account ${mask(onInvoice)} on the invoice differs from ${supplier.name}'s approved ${mask(approved)}.`)
+  if (onInvoice === approved) return r('Bank account', 'vendor_bank', 'pass', `Pays into ${poss(supplier.name)} approved account ${mask(approved)}.`)
+  return r('Bank account', 'vendor_bank', 'warn', `Bank account ${mask(onInvoice)} on the invoice differs from ${poss(supplier.name)} approved ${mask(approved)}.`)
 }
 
 export const vendorIdentity: Check = ({ invoice, supplier }) => {
@@ -183,7 +183,7 @@ export const vendorIdentity: Check = ({ invoice, supplier }) => {
   if (sim >= 0.95) {
     return gstOk
       ? r('Vendor identity', 'vendor_bank', 'pass', `Issued by ${supplier.name}${invoice.vendor_gstin ? ', GSTIN matches' : ''}.`)
-      : r('Vendor identity', 'vendor_bank', 'warn', `GSTIN ${gstin(invoice.vendor_gstin)} on the invoice isn't ${supplier.name}'s registered GSTIN.`)
+      : r('Vendor identity', 'vendor_bank', 'warn', `GSTIN ${gstin(invoice.vendor_gstin)} on the invoice isn't ${poss(supplier.name)} registered GSTIN.`)
   }
   if (sim >= 0.8) return r('Vendor identity', 'vendor_bank', 'warn', `Vendor name "${invoice.vendor_name}" is close to, but not the same as, "${supplier.name}".`)
   if (gstOk && invoice.vendor_gstin) return r('Vendor identity', 'vendor_bank', 'warn', `Vendor name "${invoice.vendor_name}" differs from ${supplier.name}, though the GSTIN matches.`)
@@ -266,8 +266,8 @@ export const currencyInr: Check = ({ invoice }) =>
 export const amountSpike: Check = ({ invoice, supplier }) => {
   if (invoice.amount === null || !supplier.avg_invoice_amount) return null
   const x = invoice.amount / supplier.avg_invoice_amount
-  if (x <= 3) return r('Amount vs usual', 'behaviour', 'pass', `In line with ${supplier.name}'s usual invoice of about ${inr(supplier.avg_invoice_amount)}.`)
-  return r('Amount vs usual', 'behaviour', 'warn', `${x.toFixed(1)}× ${supplier.name}'s usual invoice of about ${inr(supplier.avg_invoice_amount)}.`)
+  if (x <= 3) return r('Amount vs usual', 'behaviour', 'pass', `In line with ${poss(supplier.name)} usual invoice of about ${inr(supplier.avg_invoice_amount)}.`)
+  return r('Amount vs usual', 'behaviour', 'warn', `${x.toFixed(1)}× ${poss(supplier.name)} usual invoice of about ${inr(supplier.avg_invoice_amount)}.`)
 }
 
 export const paymentTerms: Check = ({ invoice }) => {

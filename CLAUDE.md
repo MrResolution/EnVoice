@@ -32,6 +32,8 @@ npm run test:rls                          # RLS tests against the hosted project
 npm run seed                              # regenerate supabase/seed.sql from samples/world.json
 npm --prefix app run dev                  # web app on localhost:5173
 npm --prefix app run apk                  # build web + sync Capacitor + gradle debug APK
+npm run deploy:web                        # build + deploy the PWA backup to https://invoseal.vercel.app
+npm run e2e                               # whole demo through the live functions (run after demo_reset.sql)
 npm --prefix chain run node               # local chain (keep running during the demo)
 npm --prefix chain run anchor             # anchor new audit entries (Merkle root on-chain)
 npm --prefix chain run verify             # compare DB roots with on-chain roots
@@ -66,5 +68,7 @@ Supabase CLI and Docker are NOT installed. DB changes and function deploys go th
 - APK trouble: fall back to the Vercel PWA. Don't lose more than 20 minutes on it.
 
 ## Design
-Calm navy/teal, green/amber/red only for status, touch targets ≥ 44 px, mobile-first, Indian number format (₹2,40,000).
+Near-black + lime on light grey (design canvas: https://claude.ai/artifact/PQqELWVWnfmpsagoBP5vG5), green/amber/red only
+for status, touch targets ≥ 44 px, mobile-first for sellers/buyers, web dashboard for the lender, Indian number format (₹2,40,000).
+Animations: `motion` springs, respect reduced motion. UI kit in `app/src/ui/`.
 No purple gradients, no lorem ipsum, no emoji overload, no dark patterns, no unexplained scores.

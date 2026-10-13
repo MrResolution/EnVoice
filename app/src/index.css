@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Near-black + lime on light grey (from the approved design canvas). Green, amber and red stay for status only. */
+@theme {
+  --color-ink: #121416;
+  --color-ink-2: #2a2d30;
+  --color-ink-3: #45494d;
+  --color-ring: #2b2f33;
+  --color-ground: #f2f4f5;
+  --color-line: #e6e9eb;
+  --color-muted: #6b7378;
+  --color-soft: #c3c8cc;
+  --color-lime: #c9f24d;
+  --color-lime-deep: #a8d42a;
+  --color-ok: #15803d;
+  --color-ok-soft: #e9f7df;
+  --color-warn: #b45309;
+  --color-warn-soft: #fdf3e2;
+  --color-bad: #b91c1c;
+  --color-bad-soft: #fdecec;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html, body { background: var(--color-ground); color: var(--color-ink); }
+body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; font-variant-numeric: tabular-nums; }
+input, select, textarea { font-size: 16px; } /* stops Android/iOS zooming into fields */
+button, a { touch-action: manipulation; }
+:focus-visible { outline: 3px solid color-mix(in srgb, var(--color-lime-deep) 70%, transparent); outline-offset: 2px; }
+::selection { background: var(--color-lime); color: var(--color-ink); }
+
+/* Loading placeholder that shimmers instead of a spinner. */
+.skeleton { background: linear-gradient(90deg, #e9ecee 25%, #f6f7f8 50%, #e9ecee 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite linear; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* Scrollbars that don't shout on desktop. */
+.thin-scroll { scrollbar-width: thin; scrollbar-color: #cfd5d9 transparent; }
+.no-scrollbar { scrollbar-width: none; } .no-scrollbar::-webkit-scrollbar { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton { animation: none; }
+  *, *::before, *::after { scroll-behavior: auto !important; }
+}

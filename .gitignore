@@ -22,3 +22,11 @@ tools/.venv/
 # OS / editor
 .DS_Store
 *.log
+
+# sample images copied into the web build
+app/public/samples/
+app/invoseal-debug.apk
+supabase/.temp/
+
+# staged static build for `vercel deploy` (copy of app/dist)
+deploy/

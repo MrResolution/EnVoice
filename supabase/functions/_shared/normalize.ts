@@ -114,7 +114,11 @@ export function hamming(a: string | null | undefined, b: string | null | undefin
 
 // Display helpers, shared so reasons read the same on every screen.
 const IN = new Intl.NumberFormat('en-IN', { maximumFractionDigits: 2 })
-export const inr = (n: number | null | undefined) => (n === null || n === undefined ? '—' : '₹' + IN.format(n))
+const PAISE = new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+/** ₹2,40,000 for whole rupees, ₹36,610.20 (never .2) when there are paise. */
+export const inr = (n: number | null | undefined) => (n === null || n === undefined ? '—' : '₹' + (Number.isInteger(round2(n)) ? IN : PAISE).format(n))
+/** "Ravi Plastics'" not "Ravi Plastics's". */
+export const poss = (s: string) => (s.endsWith('s') ? `${s}'` : `${s}'s`)
 export const qty = (n: number | null | undefined) => (n === null || n === undefined ? '—' : IN.format(n))
 export const pct = (x: number) => (x > 0 ? '+' : '') + (Math.round(x * 1000) / 10) + '%'
 export const day = (iso: string | null | undefined) =>

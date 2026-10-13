@@ -1,0 +1,16 @@
+{
+  "name": "invoseal-chain",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "node": "hardhat node",
+    "build": "hardhat build",
+    "anchor": "hardhat build --quiet && node scripts/anchor.ts",
+    "verify": "node scripts/verify.ts"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "2.117.3",
+    "ethers": "6.17.0",
+    "hardhat": "3.19.0"
+  }
+}

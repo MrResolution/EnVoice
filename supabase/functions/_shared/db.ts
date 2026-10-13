@@ -49,13 +49,37 @@ export function handle(roles: Role[], fn: (body: Record<string, unknown>, caller
 }
 
 async function whoIs(db: SupabaseClient, req: Request): Promise<Caller> {
+  const user = await signedIn(db, req)
+  const { data: p } = await db.from('profiles').select('id, role, party_id').eq('id', user.id).single()
+  if (!p) throw new HttpError(403, 'Finish setting up your account first.')
+  return p as Caller
+}
+
+async function signedIn(db: SupabaseClient, req: Request) {
   const jwt = req.headers.get('authorization')?.replace(/^Bearer\s+/i, '')
   if (!jwt) throw new HttpError(401, 'Please sign in.')
   const { data, error } = await db.auth.getUser(jwt)
   if (error || !data.user) throw new HttpError(401, 'Your session has expired. Please sign in again.')
-  const { data: p } = await db.from('profiles').select('id, role, party_id').eq('id', data.user.id).single()
-  if (!p) throw new HttpError(403, 'This account has no role.')
-  return p as Caller
+  return data.user
+}
+
+/** Like handle(), for a signed-in user who may not have a profile yet (onboarding). */
+export function handleUser(fn: (body: Record<string, unknown>, user: { id: string; email: string | null; name: string | null }, db: SupabaseClient) => Promise<unknown>) {
+  Deno.serve(async (req) => {
+    if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS })
+    try {
+      if (req.method !== 'POST') throw new HttpError(405, 'Use POST.')
+      const db = admin()
+      const u = await signedIn(db, req)
+      const meta = u.user_metadata ?? {}
+      const body = await req.json().catch(() => ({}))
+      return json(await fn(body ?? {}, { id: u.id, email: u.email ?? null, name: (meta.full_name ?? meta.name ?? null) as string | null }, db))
+    } catch (e) {
+      if (e instanceof HttpError) return json({ error: e.message }, e.status)
+      console.error(e)
+      return json({ error: 'Something went wrong on the server. Please try again.' }, 500)
+    }
+  })
 }
 
 export async function must<T>(q: PromiseLike<{ data: T; error: { message: string; code?: string } | null }>, what: string): Promise<NonNullable<T>> {

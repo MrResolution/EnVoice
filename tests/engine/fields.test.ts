@@ -55,3 +55,11 @@ describe('record hash', () => {
     expect(await recordHash({ ...a, amount: 885000 })).not.toBe(await recordHash(a))
   })
 })
+
+describe('display', () => {
+  it('rupees use Indian grouping and two decimals only when there are paise', async () => {
+    const { inr, poss } = await import('../../supabase/functions/_shared/normalize.ts')
+    expect([inr(240000), inr(36610.2), inr(885000)]).toEqual(['₹2,40,000', '₹36,610.20', '₹8,85,000'])
+    expect([poss('Ravi Plastics'), poss('Peacock Retail')]).toEqual(["Ravi Plastics'", "Peacock Retail's"])
+  })
+})

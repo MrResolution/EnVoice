@@ -39,5 +39,6 @@ S6 reject (63). Details in `docs/checks.md`.
 - **Scale?** Each check is an independent function; matching columns are indexed; heavy work can move to a queue.
 
 ## If something breaks
-Gemini down → cache or manual entry. APK broken → Vercel PWA. Local chain restarted → `npm --prefix chain run anchor`
-redeploys and re-anchors. Supabase slow → the backup recording.
+Gemini down → cache or manual entry. APK broken → Vercel PWA. Local chain restarted (Hardhat's node keeps
+nothing) → old batches show "transaction not found on this chain": run `supabase/demo_reset.sql`, redo the pre-load,
+then `npm --prefix chain run anchor` (it redeploys the contract by itself). Supabase slow → the backup recording.

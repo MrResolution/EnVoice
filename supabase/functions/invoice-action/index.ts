@@ -7,15 +7,25 @@ import { latestRecorded, recordHash, type Entry } from '../_shared/audit.ts'
 import { offerTerms } from '../_shared/decide.ts'
 import { inr } from '../_shared/normalize.ts'
 
-const ACTIONS = { confirm: 'buyer', dispute: 'buyer', approve: 'lender', reject: 'lender' } as const
+const ACTIONS = { confirm: 'buyer', dispute: 'buyer', approve: 'lender', reject: 'lender', accept: 'supplier' } as const
 const CLEARED = ['checked', 'approved']
 
-handle(['buyer', 'lender'], async (body, caller, db) => {
+handle(['buyer', 'lender', 'supplier'], async (body, caller, db) => {
   const action = String(body.action) as keyof typeof ACTIONS
   if (ACTIONS[action] !== caller.role) throw new HttpError(403, `A ${caller.role} can't ${action} an invoice.`)
   const note = typeof body.note === 'string' ? body.note.trim().slice(0, 300) || null : null
   const inv = await must(db.from('invoices').select('*').eq('id', String(body.invoice_id ?? '')).maybeSingle(), 'Invoice')
   const audit = (event_type: string, summary: string) => appendAudit(db, { invoice_id: inv.id, event_type, summary, actor_id: caller.id })
+
+  if (caller.role === 'supplier') {
+    // The supplier takes the released offer (mock payout: no money moves in this prototype).
+    if (inv.supplier_id !== caller.party_id) throw new HttpError(404, 'Invoice not found.')
+    const offer = await must(db.from('financing_offers').select('id, status, advance_amount').eq('invoice_id', inv.id).maybeSingle(), 'Offer')
+    if (offer.status === 'accepted') throw new HttpError(409, 'You already accepted this offer.')
+    await must(db.from('financing_offers').update({ status: 'accepted', accepted_at: new Date().toISOString() }).eq('id', offer.id).select('id').single(), 'Offer')
+    await audit('offer_accepted', 'supplier accepted the advance (mock payout)')
+    return { status: inv.status, message: `Accepted. ${inr(Number(offer.advance_amount))} is on its way (mock payout).` }
+  }
 
   if (caller.role === 'buyer') {
     if (inv.buyer_id !== caller.party_id || ['uploaded', 'extracted'].includes(inv.status)) throw new HttpError(404, 'Invoice not found.')
