@@ -1,0 +1,296 @@
+[
+  {
+    "dataset_id": "DS-5101",
+    "name": "Dataset 1 - 20L Plastic Buckets",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-5101",
+      "po_date": "2026-10-10",
+      "item": "20 L plastic bucket with lid",
+      "hsn": "3924",
+      "qty": 500,
+      "unit_price": 200.0,
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "total": 118000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8101",
+      "qty_delivered": 500,
+      "delivered_on": "2026-10-10"
+    },
+    "invoice": {
+      "invoice_no": "INV-5101",
+      "invoice_date": "2026-10-11",
+      "due_date": "2026-12-10",
+      "files": {
+        "png": "samples/INV-5101.png",
+        "pdf": "samples/INV-5101.pdf"
+      },
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "amount": 118000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 100300.0,
+      "fee_amount": 1770.0
+    }
+  },
+  {
+    "dataset_id": "DS-5102",
+    "name": "Dataset 2 - Industrial Storage Drums",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-5102",
+      "po_date": "2026-10-09",
+      "item": "50 L industrial storage drum",
+      "hsn": "3923",
+      "qty": 200,
+      "unit_price": 500.0,
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "total": 118000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8102",
+      "qty_delivered": 200,
+      "delivered_on": "2026-10-09"
+    },
+    "invoice": {
+      "invoice_no": "INV-5102",
+      "invoice_date": "2026-10-11",
+      "due_date": "2026-12-10",
+      "files": {
+        "png": "samples/INV-5102.png",
+        "pdf": "samples/INV-5102.pdf"
+      },
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "amount": 118000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 100300.0,
+      "fee_amount": 1770.0
+    }
+  },
+  {
+    "dataset_id": "DS-5103",
+    "name": "Dataset 3 - Pedal Dustbins",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-5103",
+      "po_date": "2026-10-08",
+      "item": "12 L pedal dustbin",
+      "hsn": "3924",
+      "qty": 400,
+      "unit_price": 250.0,
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "total": 118000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8103",
+      "qty_delivered": 400,
+      "delivered_on": "2026-10-08"
+    },
+    "invoice": {
+      "invoice_no": "INV-5103",
+      "invoice_date": "2026-10-10",
+      "due_date": "2026-12-09",
+      "files": {
+        "png": "samples/INV-5103.png",
+        "pdf": "samples/INV-5103.pdf"
+      },
+      "subtotal": 100000.0,
+      "tax_amount": 18000.0,
+      "amount": 118000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 100300.0,
+      "fee_amount": 1770.0
+    }
+  },
+  {
+    "dataset_id": "DS-5104",
+    "name": "Dataset 4 - Plastic Crates",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-5104",
+      "po_date": "2026-10-07",
+      "item": "Heavy-duty plastic crate 40L",
+      "hsn": "3923",
+      "qty": 300,
+      "unit_price": 400.0,
+      "subtotal": 120000.0,
+      "tax_amount": 21600.0,
+      "total": 141600.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8104",
+      "qty_delivered": 300,
+      "delivered_on": "2026-10-07"
+    },
+    "invoice": {
+      "invoice_no": "INV-5104",
+      "invoice_date": "2026-10-09",
+      "due_date": "2026-12-08",
+      "files": {
+        "png": "samples/INV-5104.png",
+        "pdf": "samples/INV-5104.pdf"
+      },
+      "subtotal": 120000.0,
+      "tax_amount": 21600.0,
+      "amount": 141600.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 120360.0,
+      "fee_amount": 2124.0
+    }
+  },
+  {
+    "dataset_id": "DS-5105",
+    "name": "Dataset 5 - Water Containers",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-5105",
+      "po_date": "2026-10-06",
+      "item": "10 L water dispenser container",
+      "hsn": "3923",
+      "qty": 600,
+      "unit_price": 150.0,
+      "subtotal": 90000.0,
+      "tax_amount": 16200.0,
+      "total": 106200.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8105",
+      "qty_delivered": 600,
+      "delivered_on": "2026-10-06"
+    },
+    "invoice": {
+      "invoice_no": "INV-5105",
+      "invoice_date": "2026-10-08",
+      "due_date": "2026-12-07",
+      "files": {
+        "png": "samples/INV-5105.png",
+        "pdf": "samples/INV-5105.pdf"
+      },
+      "subtotal": 90000.0,
+      "tax_amount": 16200.0,
+      "amount": 106200.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 90270.0,
+      "fee_amount": 1593.0
+    }
+  },
+  {
+    "dataset_id": "DS-8801",
+    "name": "Dataset 6 - High Value Containers",
+    "buyer": {
+      "name": "Peacock Retail Pvt Ltd",
+      "upi_id": "peacock@invopay",
+      "gstin": "33AACCP5120D1Z9"
+    },
+    "seller": {
+      "name": "Ravi Plastics",
+      "upi_id": "ravi@invopay",
+      "gstin": "33ABCPR4821K1Z6",
+      "bank_account": "918020014321"
+    },
+    "purchase_order": {
+      "po_number": "PO-8801",
+      "po_date": "2026-10-12",
+      "item": "Heavy duty container 50L",
+      "hsn": "3924",
+      "qty": 100,
+      "unit_price": 500.0,
+      "subtotal": 50000.0,
+      "tax_amount": 9000.0,
+      "total": 59000.0
+    },
+    "delivery_receipt": {
+      "grn_number": "GRN-8801",
+      "qty_delivered": 100,
+      "delivered_on": "2026-10-12"
+    },
+    "invoice": {
+      "invoice_no": "INV-8801",
+      "invoice_date": "2026-10-12",
+      "due_date": "2026-12-11",
+      "files": {
+        "png": "samples/INV-8801.png",
+        "pdf": "samples/INV-8801.pdf"
+      },
+      "subtotal": 50000.0,
+      "tax_amount": 9000.0,
+      "amount": 59000.0,
+      "currency": "INR"
+    },
+    "financing": {
+      "advance_pct": 85,
+      "advance_amount": 50150.0,
+      "fee_amount": 885.0
+    }
+  }
+]
