@@ -15,7 +15,8 @@ const DEMO = [
 export function EmailAuth() {
   const [params] = useSearchParams()
   const [mode, setMode] = useState<'in' | 'up'>('in')
-  const [email, setEmail] = useState('')
+  const lender = params.get('role') === 'lender'
+  const [email, setEmail] = useState(lender ? 'lender@invoseal.test' : '')
   const [password, setPassword] = useState('')
   const [show, setShow] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -39,8 +40,8 @@ export function EmailAuth() {
     <div className="flex min-h-dvh justify-center bg-[#e4e8ea] sm:items-center sm:py-6">
       <div className="flex min-h-dvh w-full max-w-[460px] flex-col bg-ground px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:min-h-[820px] sm:rounded-[40px] sm:shadow-[0_30px_80px_-30px_rgba(18,20,22,0.45)]">
         <div className="flex items-center justify-between"><RoundBtn icon="back" label="Back" to="/welcome" /><span /></div>
-        <h1 className="mt-6 text-[30px] font-extrabold leading-tight tracking-[-0.03em]">{mode === 'in' ? 'Welcome back' : 'Create your account'}</h1>
-        <p className="mt-1 text-sm text-muted">{mode === 'in' ? 'Sign in with your email and password.' : 'Then tell us if you sell or buy. No KYC in this prototype.'}</p>
+        <h1 className="mt-6 text-[30px] font-extrabold leading-tight tracking-[-0.03em]">{lender ? 'Lender sign in' : mode === 'in' ? 'Welcome back' : 'Create your account'}</h1>
+        <p className="mt-1 text-sm text-muted">{lender ? 'Opens the lender dashboard: review queue, portfolio and audit chain. Lender accounts are invite-only; the demo lender is filled in.' : mode === 'in' ? 'Sign in with your email and password.' : 'Then tell us if you sell or buy. No KYC in this prototype.'}</p>
 
         <div role="tablist" className="relative mt-5 grid grid-cols-2 rounded-full bg-white p-1">
           {(['in', 'up'] as const).map((m) => (

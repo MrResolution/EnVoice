@@ -63,6 +63,12 @@ export function Onboarding() {
               <div className="mt-5 grid gap-3">
                 {option('supplier', 'I sell goods', 'Upload invoices your buyers pay later. Get up to 85% today.', 'up')}
                 {option('buyer', 'I buy goods', 'Raise purchase orders, record deliveries, confirm invoices.', 'down')}
+                <motion.button type="button" whileTap={{ scale: 0.98 }} onClick={async () => { await signOut(); window.location.hash = '#/auth/email?role=lender' }}
+                  className="flex items-center gap-3 rounded-[26px] border-2 border-dashed border-line p-4 text-left">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-lime"><Icon name="chart" size={22} /></span>
+                  <span className="flex-1"><span className="block text-lg font-bold">I lend money</span><span className="block text-[13px] leading-snug text-muted">Lender accounts are invite-only (they see every invoice). Tap to sign in as the demo lender.</span></span>
+                  <Icon name="next" size={18} />
+                </motion.button>
               </div>
               <div className="mt-3 flex items-center gap-2.5 rounded-2xl bg-white px-4 py-3 text-[13px] text-ink-3"><Icon name="info" size={18} />Prototype: no KYC, Aadhaar or PAN needed.</div>
               <Btn type="button" className="mt-auto w-full" onClick={() => setStep(1)}>Continue</Btn>

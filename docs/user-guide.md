@@ -12,7 +12,7 @@ rules decide, and every step is recorded in a tamper-evident audit chain anchore
 |---|---|
 | Android app | install `Invoseal.apk` (Drive/WhatsApp → open → allow install → "Install anyway") |
 | Web (same app) | https://invoseal.vercel.app — sellers and buyers get the phone layout, lenders a dashboard |
-| Sign in | **Continue with Google**, **Continue with email** (create an account), or a **demo account** |
+| Sign in | **Continue with Google**, **Continue with email** (create an account), a **demo account**, or **I'm a lender** (lender dashboard) |
 
 Demo accounts (all `@invoseal.test`, one shared demo password kept by the team in `.env.local`):
 `ravi`, `kaveri` (sellers) · `peacock`, `banyan` (buyers) · `lender` · `auditor`.
@@ -86,7 +86,8 @@ phone or address are flagged as possible self-dealing, so use different made-up 
 
 ## Lender web dashboard
 
-**Pages:** Review queue · Portfolio · Audit chain (sign in as `lender` on a laptop)
+**Open it:** https://invoseal.vercel.app → **I'm a lender** (lender account filled in) → type the demo password → `/#/l`.
+**Pages:** Review queue · Portfolio · Audit chain (best on a laptop; works on a phone too)
 
 - **Key numbers:** advanced so far, needs review, waiting for buyers, blocked by rules (all live).
 - **Queue ranked by risk** with filters (needs review, all, with buyer, released, rejected) and search.

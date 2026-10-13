@@ -73,6 +73,11 @@ export function Welcome() {
           <Link to="/auth/email" className="flex h-14 w-full items-center justify-center gap-2.5 rounded-full bg-white text-base font-bold ring-1 ring-line transition-transform active:scale-[0.97]">
             <Icon name="mail" />Continue with email
           </Link>
+          <Link to="/auth/email?role=lender" className="flex h-14 w-full items-center gap-3 rounded-full bg-lime pl-2 pr-5 text-left transition-transform active:scale-[0.97]">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-lime"><Icon name="chart" size={18} /></span>
+            <span className="flex-1"><span className="block text-[15px] font-bold leading-tight">I'm a lender</span><span className="block text-xs leading-tight">open the web dashboard</span></span>
+            <Icon name="next" size={18} />
+          </Link>
           <Link to="/auth/email?demo=1" className="block pt-1.5 text-center text-xs text-muted underline-offset-2 hover:underline">
             Try a demo account · prototype with mock data, no real money
           </Link>
