@@ -1,0 +1,24 @@
+# secrets and local env (never commit)
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+
+# deps and builds
+node_modules/
+dist/
+app/android/app/build/
+app/android/.gradle/
+app/android/local.properties
+chain/artifacts/
+chain/cache/
+chain/deployment.json
+tools/.venv/
+*.apk
+*.idsig
+
+# OS / editor
+.DS_Store
+*.log

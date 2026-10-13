@@ -1,0 +1,38 @@
+{
+  "S1": {
+    "file": "S1-clean.png",
+    "sha256": "257956576763dfa47bc2fdbfe169ddf506e96c9ddcec42076d58b260f726d0b5",
+    "image_hash": "796061112800002d",
+    "bytes": 121421
+  },
+  "S2": {
+    "file": "S2-duplicate.png",
+    "sha256": "257956576763dfa47bc2fdbfe169ddf506e96c9ddcec42076d58b260f726d0b5",
+    "image_hash": "796061112800002d",
+    "bytes": 121421
+  },
+  "S3": {
+    "file": "S3-mismatch.png",
+    "sha256": "a91ff946fa28f8e4a564cfc0119d96c1a034d96bd989cc065156f2cb93687563",
+    "image_hash": "797061312800002d",
+    "bytes": 120613
+  },
+  "S4": {
+    "file": "S4-self-dealing.png",
+    "sha256": "769fcd010d8229080f742c878710ccb4c97a96d226bd32fd8f27cf645fa5f711",
+    "image_hash": "397061092c00002d",
+    "bytes": 120038
+  },
+  "S5": {
+    "file": "S5-tamper-target.png",
+    "sha256": "38170257f1c8c47fe3f49e784089ea3488759e0cdc20ad7fd1d24f7bb57b7416",
+    "image_hash": "797063112800002d",
+    "bytes": 121861
+  },
+  "S6": {
+    "file": "S6-edited-copy.png",
+    "sha256": "94b9b7ac86053d751bfec73b431a2cbb50cedc19f17b62b257ebe184ee7d46d2",
+    "image_hash": "796061012800002d",
+    "bytes": 122715
+  }
+}

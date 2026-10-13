@@ -1,0 +1,10 @@
+{
+  "name": "Invoseal",
+  "short_name": "Invoseal",
+  "description": "Invoice checks for lenders (prototype, mock data).",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#0f2a44",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}

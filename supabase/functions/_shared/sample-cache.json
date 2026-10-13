@@ -1,0 +1,127 @@
+{
+  "257956576763dfa47bc2fdbfe169ddf506e96c9ddcec42076d58b260f726d0b5": {
+    "invoice_no": "INV-1001",
+    "invoice_date": "2026-10-10",
+    "due_date": "2026-12-09",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-4501",
+    "currency": "INR",
+    "subtotal": 203390.0,
+    "tax_amount": 36610.2,
+    "amount": 240000.0,
+    "bank_account": "918020014321",
+    "line_items": [
+      {
+        "description": "20 L plastic bucket with lid",
+        "hsn": "3924",
+        "qty": 1000,
+        "unit_price": 203.39,
+        "amount": 203390.0
+      }
+    ],
+    "confidence": 0.97
+  },
+  "a91ff946fa28f8e4a564cfc0119d96c1a034d96bd989cc065156f2cb93687563": {
+    "invoice_no": "INV-1002",
+    "invoice_date": "2026-10-11",
+    "due_date": "2026-11-25",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Banyan Stores",
+    "buyer_gstin": "33AADCB8834E1Z3",
+    "po_number": "PO-4502",
+    "currency": "INR",
+    "subtotal": 50000.0,
+    "tax_amount": 9000.0,
+    "amount": 59000.0,
+    "bank_account": "918020014321",
+    "line_items": [
+      {
+        "description": "50 L storage drum",
+        "hsn": "3923",
+        "qty": 100,
+        "unit_price": 500,
+        "amount": 50000.0
+      }
+    ],
+    "confidence": 0.97
+  },
+  "769fcd010d8229080f742c878710ccb4c97a96d226bd32fd8f27cf645fa5f711": {
+    "invoice_no": "KT-0042",
+    "invoice_date": "2026-10-09",
+    "due_date": "2026-11-23",
+    "vendor_name": "Kaveri Traders",
+    "vendor_gstin": "33AAKFK7731M1Z2",
+    "buyer_name": "Kaveri Retail",
+    "buyer_gstin": "33AAKCK2290Q1Z7",
+    "po_number": "PO-4503",
+    "currency": "INR",
+    "subtotal": 60000.0,
+    "tax_amount": 10800.0,
+    "amount": 70800.0,
+    "bank_account": "602010057788",
+    "line_items": [
+      {
+        "description": "Steel storage rack, 5 shelf",
+        "hsn": "9403",
+        "qty": 60,
+        "unit_price": 1000,
+        "amount": 60000.0
+      }
+    ],
+    "confidence": 0.97
+  },
+  "38170257f1c8c47fe3f49e784089ea3488759e0cdc20ad7fd1d24f7bb57b7416": {
+    "invoice_no": "INV-0998",
+    "invoice_date": "2026-10-02",
+    "due_date": "2026-11-16",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Banyan Stores",
+    "buyer_gstin": "33AADCB8834E1Z3",
+    "po_number": "PO-4504",
+    "currency": "INR",
+    "subtotal": 75000.0,
+    "tax_amount": 13500.0,
+    "amount": 88500.0,
+    "bank_account": "918020014321",
+    "line_items": [
+      {
+        "description": "12 L pedal dustbin",
+        "hsn": "3924",
+        "qty": 300,
+        "unit_price": 250,
+        "amount": 75000.0
+      }
+    ],
+    "confidence": 0.97
+  },
+  "94b9b7ac86053d751bfec73b431a2cbb50cedc19f17b62b257ebe184ee7d46d2": {
+    "invoice_no": "INV-1007",
+    "invoice_date": "2026-10-10",
+    "due_date": "2026-12-09",
+    "vendor_name": "Ravi Plastics",
+    "vendor_gstin": "33ABCPR4821K1Z6",
+    "buyer_name": "Peacock Retail Pvt Ltd",
+    "buyer_gstin": "33AACCP5120D1Z9",
+    "po_number": "PO-4501",
+    "currency": "INR",
+    "subtotal": 203390.0,
+    "tax_amount": 36610.2,
+    "amount": 246000.0,
+    "bank_account": "918020019911",
+    "line_items": [
+      {
+        "description": "20 L plastic bucket with lid",
+        "hsn": "3924",
+        "qty": 1000,
+        "unit_price": 203.39,
+        "amount": 203390.0
+      }
+    ],
+    "confidence": 0.97
+  }
+}
