@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { day, inr } from '@shared/normalize.ts'
 import { useAuth } from '../../lib/auth'
 import { call } from '../../lib/supabase'
-import { nextStep, useInvoices, useOffers, useParties, type InvoiceRow } from '../../lib/data'
+import { nextStep, toUpiId, useInvoices, useOffers, useParties, type InvoiceRow } from '../../lib/data'
 import { DocumentView } from '../../components/DocumentView'
 import { Icon, Rings } from '../../ui/Icon'
 import { Badge, Btn, Card, DarkCard, Empty, ErrorNote, Skeleton, toneOf } from '../../ui/kit'
@@ -34,8 +34,9 @@ export function LenderDashboard() {
   const count = (k: string) => submitted?.filter(FILTERS.find((f) => f[0] === k)![2]).length ?? 0
   useEffect(() => { if (submitted && !count('review') && filter === 'review') setFilter('all') }, [submitted]) // eslint-disable-line react-hooks/exhaustive-deps
   const nm = (id: string | null) => (id ? names.get(id)?.name ?? '…' : '—')
+  const upi = (id: string | null) => (id ? names.get(id)?.upi_id ?? '' : '')
   const shown = submitted?.filter(FILTERS.find((f) => f[0] === filter)![2])
-    .filter((r) => !q || `${r.invoice_no} ${nm(r.supplier_id)} ${nm(r.buyer_id)}`.toLowerCase().includes(q.toLowerCase())).sort(rank) ?? null
+    .filter((r) => !q || `${r.invoice_no} ${nm(r.supplier_id)} ${upi(r.supplier_id)} ${nm(r.buyer_id)} ${upi(r.buyer_id)}`.toLowerCase().includes(q.toLowerCase())).sort(rank) ?? null
   const advanced = (offers ?? []).reduce((s, o) => s + o.advance_amount, 0)
   const avgPct = offers?.length ? Math.round(offers.reduce((s, o) => s + o.advance_pct, 0) / offers.length) : 0
   useEffect(() => { if (!sel && shown?.length && window.matchMedia('(min-width: 1280px)').matches) setSel(shown[0].id) }, [shown, sel])
@@ -86,7 +87,12 @@ export function LenderDashboard() {
                       <motion.tr key={r.id} variants={{ h: { opacity: 0 }, s: { opacity: 1 } }} onClick={() => open(r.id)} tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && open(r.id)}
                         className={`cursor-pointer border-t border-line transition-colors ${sel === r.id ? 'bg-[#f5fbe4]' : 'hover:bg-ground'}`}>
                         <td className="px-2 py-3 font-bold">{r.invoice_no ?? '—'}<div className="text-xs font-normal text-muted">{day(r.created_at)}</div></td>
-                        <td className="py-3">{nm(r.supplier_id)} → {nm(r.buyer_id)}</td>
+                        <td className="py-3">
+                          <div className="font-medium">{nm(r.supplier_id)} → {nm(r.buyer_id)}</div>
+                          {(upi(r.supplier_id) || upi(r.buyer_id)) && (
+                            <div className="text-[11px] font-mono text-muted">{upi(r.supplier_id)} → {upi(r.buyer_id)}</div>
+                          )}
+                        </td>
                         <td className="py-3 text-right font-semibold">{inr(r.amount)}</td>
                         <td className="py-3 pl-4"><span className={`font-bold ${r.risk_level === 'HIGH' ? 'text-bad' : r.risk_level === 'MEDIUM' ? 'text-warn' : 'text-ok'}`}>{r.risk_level === 'LOW' ? '▲' : r.risk_level === 'MEDIUM' ? '●' : '▼'} {r.risk_score ?? '—'}</span></td>
                         <td className="py-3">{r.buyer_score ?? '—'}</td>
@@ -116,7 +122,7 @@ function SidePanel({ id }: { id: string }) {
       <DarkCard className="p-[18px]">
         <div className="flex items-center gap-4">
           {inv.risk_score !== null && inv.risk_level && <RiskRing score={inv.risk_score} level={inv.risk_level} size={92} dark />}
-          <div className="min-w-0"><div className="text-[22px] font-bold">{inv.invoice_no}</div><div className="truncate text-[13px] text-soft">{d.supplier} → {d.buyer}</div><div className="mt-1 text-lg font-bold text-lime">{inr(inv.amount)}</div></div>
+          <div className="min-w-0"><div className="text-[22px] font-bold">{inv.invoice_no}</div><div className="truncate text-[13px] text-soft">{d.supplier} ({toUpiId(d.supplier)}) → {d.buyer} ({toUpiId(d.buyer)})</div><div className="mt-1 text-lg font-bold text-lime">{inr(inv.amount)}</div></div>
         </div>
         <p className="mt-3 text-[13px] leading-relaxed text-[#d9dde0]">{inv.risk_summary?.replace(/^Risk \d+\/100 — \w+\. /, '')}</p>
       </DarkCard>

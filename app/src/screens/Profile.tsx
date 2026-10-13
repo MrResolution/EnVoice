@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useAuth } from '../lib/auth'
 import { useDesktop } from '../lib/layout'
 import { Icon } from '../ui/Icon'
@@ -8,6 +9,7 @@ import { TopBar } from '../ui/MobileShell'
 export function Profile() {
   const { profile, session, signOut } = useAuth()
   const desktop = useDesktop()
+  const [copied, setCopied] = useState(false)
   const role = profile?.role === 'buyer' ? 'Buyer' : profile?.role === 'lender' ? 'Lender' : profile?.role === 'auditor' ? 'Auditor' : 'Seller'
   const row = (label: string, value: string) => (
     <div className="flex min-h-[52px] items-center justify-between gap-3 border-b border-line py-2.5 last:border-0">
@@ -15,6 +17,14 @@ export function Profile() {
       <span className="text-right text-sm font-bold text-ink">{value}</span>
     </div>
   )
+
+  const copyId = () => {
+    if (profile?.upi_id) {
+      navigator.clipboard.writeText(profile.upi_id)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   return (
     <Page className="space-y-5">
@@ -30,7 +40,28 @@ export function Profile() {
           </div>
         </DarkCard>
 
+        {/* Unique Business InvoPay ID (like UPI ID) */}
+        <div className="flex items-center justify-between rounded-2xl bg-white p-4 border-2 border-lime/40 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-lime text-lg font-extrabold shadow-sm">
+              @
+            </span>
+            <div>
+              <div className="text-[11px] font-bold text-muted uppercase tracking-wider">InvoPay Unique ID (UPI)</div>
+              <div className="text-base font-extrabold text-ink font-mono">{profile?.upi_id ?? 'account@invopay'}</div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={copyId}
+            className="flex items-center gap-1.5 rounded-xl border border-line bg-ground px-3.5 py-2 text-xs font-bold text-ink hover:bg-line transition shadow-sm"
+          >
+            {copied ? <span className="text-ok font-bold">Copied ✓</span> : <span>Copy ID</span>}
+          </button>
+        </div>
+
         <Card className="px-5 py-2 border border-line">
+          {row('InvoPay ID (UPI format)', profile?.upi_id ?? '—')}
           {row('Organization name', profile?.party_name ?? '—')}
           {row('Contact name', profile?.full_name ?? '—')}
           {row('City / Region', profile?.city ?? '—')}

@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { day, inr, mask, qty } from '@shared/normalize.ts'
 import { useAuth } from '../lib/auth'
 import { call } from '../lib/supabase'
-import { nextStep } from '../lib/data'
+import { nextStep, toUpiId } from '../lib/data'
 import { useDesktop } from '../lib/layout'
 import { DocumentView } from '../components/DocumentView'
 import { Icon } from '../ui/Icon'
@@ -54,7 +54,7 @@ export function InvoiceScreen() {
 
   return (
     <Page className="space-y-5">
-      <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title={inv.invoice_no ?? 'Invoice'} subtitle={role === 'buyer' ? `Supplier: ${d.supplier}` : `Buyer: ${d.buyer}`} />
+      <TopBar back={<RoundBtn icon="back" label="Back" to={home} />} title={inv.invoice_no ?? 'Invoice'} subtitle={role === 'buyer' ? `Supplier: ${d.supplier} (${toUpiId(d.supplier)})` : `Buyer: ${d.buyer} (${toUpiId(d.buyer)})`} />
 
       <AnimatePresence mode="wait">
         {checking ? (

@@ -8,6 +8,7 @@ SYNESIS 26 · Fintech · "Invoice Financing with Hybrid Audit Architecture". Pro
 
 - **Live web app:** https://invoseal.vercel.app
 - **Android:** build with `npm --prefix app run apk` (debug APK)
+- **Sample Datasets & Files:** [samples/README.md](samples/README.md) · [samples/DATASETS.json](samples/DATASETS.json)
 - **How to use it (seller, buyer, lender, demo script):** [docs/user-guide.md](docs/user-guide.md)
 
 ## Features

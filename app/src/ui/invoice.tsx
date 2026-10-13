@@ -155,14 +155,14 @@ export function Steps({ inv }: { inv: InvoiceRow }) {
 }
 
 /** Compact list row for an invoice. */
-export function InvoiceRowCard({ inv, name, to, money }: { inv: InvoiceRow; name: string; to: string; money?: { value: string; note: string; tone?: 'ok' | 'warn' | 'bad' | 'muted' } }) {
+export function InvoiceRowCard({ inv, name, to, money, upi_id }: { inv: InvoiceRow; name: string; to: string; money?: { value: string; note: string; tone?: 'ok' | 'warn' | 'bad' | 'muted' }; upi_id?: string }) {
   const tone = money?.tone ?? (toneOf(inv.status) === 'neutral' ? 'muted' : toneOf(inv.status))
   return (
     <Link to={to} className="flex items-center gap-3 rounded-[22px] bg-white p-3.5 transition-transform active:scale-[0.98]">
       <Avatar name={name} dark={inv.status === 'offer_released'} />
       <span className="min-w-0 flex-1">
         <span className="block truncate text-[15px] font-bold">{inv.invoice_no ?? 'Draft invoice'}</span>
-        <span className="block truncate text-xs text-muted">{name} · {day(inv.invoice_date ?? inv.created_at)}</span>
+        <span className="block truncate text-xs text-muted">{name}{upi_id ? ` (${upi_id})` : ''} · {day(inv.invoice_date ?? inv.created_at)}</span>
       </span>
       <span className="text-right">
         <span className="block font-bold">{money?.value ?? inr(inv.amount)}</span>

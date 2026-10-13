@@ -2,8 +2,10 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import type { Session } from '@supabase/supabase-js'
 import { configured, supabase } from './supabase'
 
+import { toUpiId } from './data'
+
 export type Role = 'supplier' | 'buyer' | 'lender' | 'auditor'
-export type Profile = { id: string; role: Role; party_id: string | null; full_name: string; party_name: string | null; city: string | null }
+export type Profile = { id: string; role: Role; party_id: string | null; full_name: string; party_name: string | null; city: string | null; upi_id: string }
 type Auth = {
   session: Session | null
   /** null after sign-in = a new account that still has to pick a role (onboarding). */
@@ -34,9 +36,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!uid) { setProfile(null); setLoading(false); return }
     const { data } = await supabase.from('profiles').select('id, role, party_id, full_name, parties(name, city)').eq('id', uid).maybeSingle()
     const party = (data?.parties ?? null) as unknown as { name: string; city: string | null } | null
-    setProfile(data ? { id: data.id, role: data.role, party_id: data.party_id, full_name: data.full_name, party_name: party?.name ?? null, city: party?.city ?? null } : null)
+    setProfile(data ? {
+      id: data.id, role: data.role, party_id: data.party_id, full_name: data.full_name,
+      party_name: party?.name ?? null, city: party?.city ?? null,
+      upi_id: toUpiId(party?.name ?? data.full_name, session?.user.email),
+    } : null)
     setLoading(false)
-  }, [uid])
+  }, [session?.user.email, uid])
   useEffect(() => { setLoading(Boolean(uid)); load() }, [load, uid])
 
   const signOut = async () => { await supabase.auth.signOut(); setProfile(null) }

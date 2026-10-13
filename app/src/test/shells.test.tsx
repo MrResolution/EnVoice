@@ -46,7 +46,7 @@ describe('Application Shells', () => {
     it('renders lender navigation and badges', () => {
       vi.spyOn(Auth, 'useAuth').mockReturnValue({
         session: null,
-        profile: { id: 'l1', role: 'lender', party_id: null, full_name: 'Priya Sharma', party_name: 'Invoseal Capital', city: 'Mumbai' },
+        profile: { id: 'l1', role: 'lender', party_id: null, full_name: 'Priya Sharma', party_name: 'Invoseal Capital', city: 'Mumbai', upi_id: 'priya@invoseal' },
         loading: false,
         refresh: async () => {},
         signOut: async () => {},
@@ -71,7 +71,7 @@ describe('Application Shells', () => {
     it('renders auditor navigation correctly', () => {
       vi.spyOn(Auth, 'useAuth').mockReturnValue({
         session: null,
-        profile: { id: 'a1', role: 'auditor', party_id: null, full_name: 'Kiran Desai', party_name: 'EY Audit', city: 'Delhi' },
+        profile: { id: 'a1', role: 'auditor', party_id: null, full_name: 'Kiran Desai', party_name: 'EY Audit', city: 'Delhi', upi_id: 'kiran@invoseal' },
         loading: false,
         refresh: async () => {},
         signOut: async () => {},
