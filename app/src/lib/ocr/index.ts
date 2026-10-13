@@ -6,6 +6,8 @@ import { parseInvoiceText } from './parser.ts'
 export type LocalOcrResult = {
   fields: InvoiceFields
   confidence: number
+  /** Fields the reader is not sure about (failed a format check, missing, or totals that don't add up). */
+  uncertain: string[]
   buyer_id: string | null
   rawText: string
 }
@@ -16,12 +18,13 @@ export type LocalOcrResult = {
  */
 export async function extractInvoiceLocally(file: File, buyers: Pick<Party, 'id' | 'name' | 'gstin'>[] = []): Promise<LocalOcrResult> {
   const rawText = await recognizeText(file)
-  const { fields, confidence } = parseInvoiceText(rawText)
+  const { fields, confidence, uncertain } = parseInvoiceText(rawText)
   const buyer_id = matchBuyer(fields, buyers)
 
   return {
     fields,
     confidence,
+    uncertain,
     buyer_id,
     rawText,
   }

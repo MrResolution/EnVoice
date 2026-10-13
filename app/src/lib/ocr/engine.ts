@@ -49,44 +49,44 @@ export async function renderPdfPage(blob: Blob): Promise<HTMLCanvasElement> {
 }
 
 /**
- * Preprocesses an image blob for OCR by:
- * 1. Upscaling low-resolution images (< 1800 px on the larger dimension) so text characters are crisp.
- * 2. Converting to grayscale and stretching contrast so faded or light text is easily recognized.
+ * Prepares a photo for OCR: small images are upscaled to ~2000 px on the long side (Tesseract misreads text
+ * under ~20 px tall: at half resolution "INV-1001" came out as "W-1001"), then greyscaled with a gentle
+ * 2–98 % level stretch. No hard contrast: shaded photos would lose the darker half. Tesseract binarises itself.
  */
 export async function preprocessImage(blob: Blob): Promise<HTMLCanvasElement | Blob> {
   if (typeof window === 'undefined' || typeof createImageBitmap === 'undefined') return blob
   try {
     const bmp = await createImageBitmap(blob)
     const maxDim = Math.max(bmp.width, bmp.height)
-    // Scale up low-res images to target ~2400px on the larger side (max 4x scaling)
-    const scale = Math.max(1, Math.min(4, Math.ceil(2400 / maxDim)))
-    const w = bmp.width * scale
-    const h = bmp.height * scale
-
+    const scale = maxDim < 1600 ? Math.min(3, 2000 / maxDim) : 1
+    const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale)
     const canvas = document.createElement('canvas')
     canvas.width = w
     canvas.height = h
     const ctx = canvas.getContext('2d', { willReadFrequently: true })
     if (!ctx) return blob
-
     ctx.imageSmoothingEnabled = true
     ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(bmp, 0, 0, w, h)
-
-    // Grayscale + Contrast stretching
-    const imgData = ctx.getImageData(0, 0, w, h)
-    const d = imgData.data
-    const contrast = 0.5
-    const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255))
-
+    const img = ctx.getImageData(0, 0, w, h)
+    const d = img.data
+    const hist = new Uint32Array(256)
     for (let i = 0; i < d.length; i += 4) {
-      const gray = (d[i] * 19595 + d[i + 1] * 38470 + d[i + 2] * 7471 + 0x8000) >> 16
-      const c = Math.min(255, Math.max(0, factor * (gray - 128) + 128))
-      d[i] = c
-      d[i + 1] = c
-      d[i + 2] = c
+      const g = (d[i] * 19595 + d[i + 1] * 38470 + d[i + 2] * 7471 + 0x8000) >> 16
+      d[i] = g
+      hist[g]++
     }
-    ctx.putImageData(imgData, 0, 0)
+    const n = d.length / 4
+    let lo = 0, hi = 255, acc = 0
+    for (; lo < 255 && (acc += hist[lo]) < n * 0.02; lo++);
+    acc = 0
+    for (; hi > 0 && (acc += hist[hi]) < n * 0.02; hi--);
+    const span = Math.max(1, hi - lo)
+    for (let i = 0; i < d.length; i += 4) {
+      const v = Math.max(0, Math.min(255, ((d[i] - lo) * 255) / span))
+      d[i] = d[i + 1] = d[i + 2] = v
+    }
+    ctx.putImageData(img, 0, 0)
     return canvas
   } catch (err) {
     console.warn('Image preprocessing skipped:', err)

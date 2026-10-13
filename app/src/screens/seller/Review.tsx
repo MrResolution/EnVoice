@@ -22,7 +22,7 @@ const FIELDS = [
 type Key = (typeof FIELDS)[number][0]
 const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
 const norm = (v: unknown) => str(v).replace(/[,\s₹]/g, '').toLowerCase()
-const SOURCE = { gemini: 'Read by Gemini AI', cache: 'Cached AI result', reuse: 'Read before', manual: 'Type the fields' }
+const SOURCE = { gemini: 'Read by Gemini AI', cache: 'Cached AI result', reuse: 'Read before', ocr: 'Read on this device', manual: 'Typed by hand' }
 
 export function Review() {
   const { id } = useParams()
@@ -33,8 +33,11 @@ export function Review() {
     fallbackFields?: Record<string, unknown>
     fallbackConfidence?: number
     fallbackBuyerId?: string
+    fallbackUncertain?: string[]
   } | null
   const note = locationState?.note
+  // Fields the on-device reader flagged: failed a format check, missing, or totals that don't add up.
+  const unsure = new Set(locationState?.fallbackUncertain ?? [])
   const [inv, setInv] = useState<InvoiceRow | null>(null)
   const [form, setForm] = useState<Record<Key, string> | null>(null)
   const [lines, setLines] = useState<Line[]>([])
@@ -72,42 +75,37 @@ export function Review() {
     })
   }, [id, nav])
 
+  /** Links the invoice to a purchase order. When the fields came from a reading of the document (server AI or
+   *  this device), only the PO number and buyer are set: copying the PO's amounts over what the document says
+   *  would make the three-way match pass by construction. With nothing read (typed by hand), the PO pre-fills
+   *  the item and amounts as a starting point; a lender reviews hand-typed invoices anyway. */
   function matchPO(po: any) {
     setBuyerId(po.buyer_id)
     const matchingBuyer = buyers.find((b) => b.id === po.buyer_id)
-    const subtotal = po.unit_price ? Math.round(po.qty * po.unit_price) : Math.round(po.total / 1.18)
-    const tax_amount = Math.round(po.total - subtotal)
-    const poNumDigits = (po.po_number || '').replace(/\D/g, '') || '1001'
-    const today = new Date().toISOString().split('T')[0]
-    const due = new Date(Date.now() + 60 * 86400000).toISOString().split('T')[0]
-
+    const read = inv?.ai_source !== 'manual' || Boolean(locationState?.fallbackFields)
+    if (read) {
+      setForm((prev) => ({ ...prev!, po_number: po.po_number, buyer_name: prev?.buyer_name || matchingBuyer?.name || '' }))
+      buzz(15)
+      return
+    }
+    const qty = Number(po.qty), price = Number(po.unit_price), rate = Number(po.tax_rate ?? 18)
+    const subtotal = Math.round(qty * price * 100) / 100
+    const tax_amount = Math.round(subtotal * rate) / 100
     setForm((prev) => ({
       ...prev!,
-      buyer_name: matchingBuyer?.name ?? 'Peacock Retail',
       po_number: po.po_number,
-      invoice_no: prev?.invoice_no ? prev.invoice_no : `INV-${poNumDigits}`,
-      invoice_date: prev?.invoice_date ? prev.invoice_date : today,
-      due_date: prev?.due_date ? prev.due_date : due,
+      buyer_name: matchingBuyer?.name ?? prev?.buyer_name ?? '',
       subtotal: String(subtotal),
       tax_amount: String(tax_amount),
-      amount: String(po.total),
+      amount: String(Math.round((subtotal + tax_amount) * 100) / 100),
       currency: 'INR',
     }))
-
-    setLines([
-      {
-        description: po.item || 'Goods',
-        hsn: String(po.hsn || '3924'),
-        qty: String(po.qty || 100),
-        unit_price: String(po.unit_price || 200),
-        amount: String(subtotal),
-      },
-    ])
+    setLines([{ description: po.item ?? '', hsn: String(po.hsn ?? ''), qty: String(qty), unit_price: String(price), amount: String(subtotal) }])
     buzz(15)
   }
 
   const hasFallback = Boolean(locationState?.fallbackFields)
-  const isLocalOcr = (inv?.ai_source === 'manual' && Boolean(inv?.ai_fields)) || hasFallback
+  const isLocalOcr = inv?.ai_source === 'ocr' || hasFallback
   const ai = (inv?.ai_fields ?? locationState?.fallbackFields) as Record<string, unknown> | null
   const edited = (k: Key) => Boolean(ai) && norm(ai![k]) !== norm(form?.[k]) && !(Number(ai![k]) === Number(norm(form?.[k])) && norm(form?.[k]) !== '')
   const buyer = buyers.find((b) => b.id === buyerId)
@@ -145,7 +143,7 @@ export function Review() {
   }
 
   const pct = inv.ai_confidence !== null ? Math.round(inv.ai_confidence * 100) : (locationState?.fallbackConfidence ? Math.round(locationState.fallbackConfidence * 100) : null)
-  const sourceText = isLocalOcr ? 'Read by Local AI' : SOURCE[inv.ai_source]
+  const sourceText = isLocalOcr ? SOURCE.ocr : SOURCE[inv.ai_source]
 
   return (
     <Page className="space-y-5">
@@ -210,7 +208,7 @@ export function Review() {
                   <Icon name="sparkle" size={14} />
                   Match with Purchase Order
                 </span>
-                <span className="text-[11px] text-muted font-medium">1-tap auto-fill</span>
+                <span className="text-[11px] text-muted font-medium">{inv.ai_source !== 'manual' || locationState?.fallbackFields ? 'links the PO · amounts stay as read' : 'pre-fills from the PO'}</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 {pos.map((p) => {
@@ -244,6 +242,7 @@ export function Review() {
                   <span className="flex items-center gap-1.5 text-xs font-semibold text-muted">
                     {label}
                     {edited(k) && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="h-2 w-2 rounded-full bg-warn" aria-label="edited by user" />}
+                    {unsure.has(k) && !edited(k) && <span className="rounded-full bg-warn-soft px-1.5 py-0.5 text-[10px] font-bold text-warn">check</span>}
                   </span>
                   <input value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} type={kind === 'date' ? 'date' : 'text'} inputMode={kind === 'money' ? 'decimal' : undefined}
                     className="min-w-0 flex-1 bg-transparent text-right text-sm font-bold text-ink outline-none placeholder:text-soft" placeholder="—" />

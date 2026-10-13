@@ -10,7 +10,7 @@ export type InvoiceRow = {
   invoice_no: string | null; invoice_date: string | null; due_date: string | null; vendor_name: string | null; vendor_gstin: string | null
   buyer_name: string | null; buyer_gstin: string | null; po_number: string | null; currency: string | null
   subtotal: number | null; tax_amount: number | null; amount: number | null; bank_account: string | null; line_items: LineItem[]
-  ai_fields: Record<string, unknown> | null; ai_source: 'gemini' | 'cache' | 'reuse' | 'manual'; ai_confidence: number | null; edited_fields: string[]
+  ai_fields: Record<string, unknown> | null; ai_source: 'gemini' | 'cache' | 'reuse' | 'ocr' | 'manual'; ai_confidence: number | null; edited_fields: string[]
   risk_score: number | null; risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | null; risk_breakdown: RiskRow[] | null; risk_summary: string | null
   buyer_score: number | null; buyer_score_parts: { payment: number; delay: number; utilisation: number; newBuyer: boolean; reason: string } | null
   advance_pct: number | null; buyer_note: string | null; created_at: string; updated_at: string

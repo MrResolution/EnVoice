@@ -183,7 +183,9 @@ export const vendorIdentity: Check = ({ invoice, supplier }) => {
   if (sim >= 0.95) {
     return gstOk
       ? r('Vendor identity', 'vendor_bank', 'pass', `Issued by ${supplier.name}${invoice.vendor_gstin ? ', GSTIN matches' : ''}.`)
-      : r('Vendor identity', 'vendor_bank', 'warn', `GSTIN ${gstin(invoice.vendor_gstin)} on the invoice isn't ${poss(supplier.name)} registered GSTIN.`)
+      : r('Vendor identity', 'vendor_bank', 'warn', supplier.gstin
+        ? `GSTIN ${gstin(invoice.vendor_gstin)} on the invoice isn't ${poss(supplier.name)} registered GSTIN.`
+        : `GSTIN ${gstin(invoice.vendor_gstin)} is printed, but ${supplier.name} has no GSTIN on file to compare it with.`)
   }
   if (sim >= 0.8) return r('Vendor identity', 'vendor_bank', 'warn', `Vendor name "${invoice.vendor_name}" is close to, but not the same as, "${supplier.name}".`)
   if (gstOk && invoice.vendor_gstin) return r('Vendor identity', 'vendor_bank', 'warn', `Vendor name "${invoice.vendor_name}" differs from ${supplier.name}, though the GSTIN matches.`)
@@ -197,13 +199,15 @@ export const fingerprint: Check = ({ invoice }) =>
     ? r('Fingerprint', 'integrity', 'pass', `SHA-256 ${short(invoice.file_hash)} recorded.`)
     : r('Fingerprint', 'integrity', 'fail', 'The file has no valid SHA-256 fingerprint.')
 
-const SOURCE = { gemini: 'Read by Gemini', cache: 'Cached AI result', reuse: 'Same file read before', manual: 'Typed by hand' }
+const SOURCE = { gemini: 'Read by Gemini', cache: 'Cached AI result', reuse: 'Same file read before', ocr: "Read on the seller's device", manual: 'Typed by hand' }
 
 export const extraction: Check = ({ invoice, buyer }) => {
   const missing = ([['invoice number', invoice.invoice_no], ['invoice date', invoice.invoice_date], ['amount', invoice.amount], ['buyer', buyer]] as const)
     .filter(([, v]) => v === null || v === undefined).map(([k]) => k)
   if (missing.length) return r('Extraction', 'integrity', 'fail', `Missing ${list([...missing])}.`)
-  if (invoice.ai_source === 'manual') return r('Extraction', 'integrity', 'warn', 'Fields were typed by hand (AI unavailable): compare them with the document.')
+  if (invoice.ai_source === 'manual') return r('Extraction', 'integrity', 'warn', 'Fields were typed by hand: compare them with the document.')
+  // The device reading happens on the seller's phone, so the server can't vouch for it: a person compares.
+  if (invoice.ai_source === 'ocr') return r('Extraction', 'integrity', 'warn', "Read on the seller's device, not by the server: compare the fields with the document.")
   const sure = Math.round((invoice.ai_confidence ?? 0) * 100)
   if (sure < 80) return r('Extraction', 'integrity', 'warn', `The AI was only ${sure}% sure of its reading.`)
   return r('Extraction', 'integrity', 'pass', `${SOURCE[invoice.ai_source]}, ${sure}% confident.`)
@@ -229,7 +233,8 @@ export function editedFields(ai: Partial<InvoiceFields>, now: InvoiceFields): st
 }
 
 export const editedAfterAi: Check = ({ invoice }) => {
-  if (invoice.ai_source === 'manual' || !invoice.ai_fields) return null
+  // Only a SERVER reading is a reference worth comparing against; a device reading came from the seller anyway.
+  if (invoice.ai_source === 'manual' || invoice.ai_source === 'ocr' || !invoice.ai_fields) return null
   const edited = invoice.edited_fields
   if (!edited.length) return r('Changed after AI reading', 'integrity', 'pass', 'Nothing was changed after the AI reading.')
   const risky = edited.filter((f) => RISKY.includes(f))

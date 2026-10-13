@@ -17,9 +17,13 @@ function Frozen() {
 function AnimatedOutlet() {
   const loc = useLocation()
   return (
-    <AnimatePresence mode="wait" initial={false}>
-      <motion.div key={loc.pathname} exit={{ opacity: 0, transition: { duration: 0.12 } }}><Frozen /></motion.div>
-    </AnimatePresence>
+    // popLayout: the new screen mounts at once while the old one fades out on top. With "wait" a stalled exit
+    // animation (background tab, battery saver) left the old screen up and navigation looked frozen.
+    <div className="relative">
+      <AnimatePresence mode="popLayout" initial={false}>
+        <motion.div key={loc.pathname} exit={{ opacity: 0, transition: { duration: 0.12 } }}><Frozen /></motion.div>
+      </AnimatePresence>
+    </div>
   )
 }
 

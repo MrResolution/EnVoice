@@ -29,34 +29,58 @@ function base64(bytes: Uint8Array): string {
   return btoa(s)
 }
 
-/** The raw parsed reply, or throws (no key, HTTP error, 429, timeout, bad JSON). The caller falls back to manual entry. */
-export async function geminiExtract(bytes: Uint8Array, mime: string, apiKey: string, model = 'gemini-1.5-flash'): Promise<unknown> {
-  const modelsToTry = [model, 'gemini-1.5-flash', 'gemini-2.0-flash']
-  let lastError: Error | null = null
-  for (const m of [...new Set(modelsToTry)]) {
+/** Why Gemini could not read the file, in words the seller can act on (never the raw API body). */
+export class GeminiError extends Error {
+  constructor(public reason: 'no_key' | 'bad_key' | 'quota' | 'model' | 'timeout' | 'unreadable' | 'down', detail: string) { super(detail) }
+}
+export const GEMINI_REASON: Record<GeminiError['reason'], string> = {
+  no_key: 'The AI reader is not configured on the server.',
+  bad_key: 'The AI reader key was refused.',
+  quota: 'The AI reader is over its free quota for now.',
+  model: 'The AI reader model is unavailable.',
+  timeout: 'The AI reader took too long.',
+  unreadable: 'The AI reader could not make sense of this file.',
+  down: 'The AI reader is unavailable right now.',
+}
+
+// Google retires model names (1.5 and 2.0 are gone); the *-latest alias always points at the current Flash.
+const MODELS = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-flash-lite-latest']
+
+/** The raw parsed reply and the model that produced it, or a GeminiError. Tries the configured model first,
+ *  then the stable aliases; a retired model or a per-model quota moves on, a bad key stops at once. */
+export async function geminiExtract(bytes: Uint8Array, mime: string, apiKey: string | undefined, preferred?: string): Promise<{ raw: unknown; model: string }> {
+  if (!apiKey) throw new GeminiError('no_key', 'GEMINI_API_KEY not set')
+  const data = base64(bytes)
+  let last: GeminiError = new GeminiError('down', 'no model answered')
+  const started = Date.now()
+  for (const model of [...new Set([preferred, ...MODELS].filter(Boolean) as string[])]) {
+    if (Date.now() - started > 45_000) break // stay well inside the edge function's time limit
     try {
-      const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(m)}:generateContent?key=${encodeURIComponent(apiKey)}`
-      const res = await fetch(url, {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {
         method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        signal: AbortSignal.timeout(8_000),
+        headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey }, // header, not URL: URLs end up in logs
+        signal: AbortSignal.timeout(25_000),
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: SYSTEM }] },
-          contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data: base64(bytes) } }, { text: 'Extract the invoice fields.' }] }],
+          contents: [{ role: 'user', parts: [{ inlineData: { mimeType: mime, data } }, { text: 'Extract the invoice fields.' }] }],
           generationConfig: { temperature: 0, responseMimeType: 'application/json', responseSchema: SCHEMA },
         }),
       })
       if (!res.ok) {
-        lastError = new Error(`Gemini (${m}) HTTP ${res.status}: ${await res.text().catch(() => '')}`)
+        const body = (await res.text().catch(() => '')).slice(0, 300)
+        if (res.status === 400 && /api key|API_KEY/i.test(body)) throw new GeminiError('bad_key', `${model}: ${res.status}`)
+        if (res.status === 401 || res.status === 403) throw new GeminiError('bad_key', `${model}: ${res.status}`)
+        last = new GeminiError(res.status === 429 ? 'quota' : res.status === 404 ? 'model' : 'down', `${model}: HTTP ${res.status} ${body}`)
         continue
       }
-      const body = await res.json()
-      const textOut = body?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('')
-      if (!textOut) throw new Error('Gemini returned no text')
-      return JSON.parse(textOut)
-    } catch (err) {
-      lastError = err as Error
+      const reply = await res.json()
+      const text = reply?.candidates?.[0]?.content?.parts?.map((p: { text?: string }) => p.text ?? '').join('')
+      if (!text) { last = new GeminiError('unreadable', `${model}: empty reply`); continue }
+      try { return { raw: JSON.parse(text), model } } catch { last = new GeminiError('unreadable', `${model}: reply was not JSON`); continue }
+    } catch (e) {
+      if (e instanceof GeminiError && e.reason === 'bad_key') throw e
+      last = e instanceof GeminiError ? e : new GeminiError((e as Error).name === 'TimeoutError' ? 'timeout' : 'down', `${model}: ${(e as Error).message}`)
     }
   }
-  throw lastError ?? new Error('Gemini extraction failed')
+  throw last
 }

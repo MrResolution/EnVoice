@@ -2,6 +2,7 @@
 // seller uploads and submits an invoice typed by hand → lender reviews (new buyer, credit capped at 60) → buyer
 // confirms → offer released → seller accepts. Run: node tools/e2e-signup.ts  (creates two *.test users)
 import { randomUUID } from 'node:crypto'
+import { crc32 } from 'node:zlib'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 
 process.loadEnvFile(new URL('../.env.local', import.meta.url).pathname)
@@ -28,8 +29,14 @@ async function signUp(tag: string) {
   if (error || !data.session) throw new Error(`sign-up ${tag}: ${error?.message ?? 'no session (email confirmation still on?)'}`)
   return c
 }
-// 1×1 PNG: a file that is not in the AI cache, so fields are typed by hand (Gemini key not needed).
-const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+// A blank 1×1 PNG with a unique text chunk: nothing to read (typed by hand) and never a duplicate of a previous run.
+const BASE = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+const chunk = (type: string, data: Buffer) => {
+  const body = Buffer.concat([Buffer.from(type), data]), len = Buffer.alloc(4), crc = Buffer.alloc(4)
+  len.writeUInt32BE(data.length); crc.writeUInt32BE(crc32(body))
+  return Buffer.concat([len, body, crc])
+}
+const PNG = Buffer.concat([BASE.subarray(0, BASE.length - 12), chunk('tEXt', Buffer.from(`run\0${randomUUID()}`)), BASE.subarray(BASE.length - 12)])
 
 const buyer = await signUp('buyer'), seller = await signUp('seller')
 const lender = client()
@@ -50,7 +57,7 @@ const path = `${s.party_id}/${randomUUID()}.png`
 const up = await seller.storage.from('invoices').upload(path, PNG, { contentType: 'image/png' })
 if (up.error) throw new Error(up.error.message)
 const ex = await fn(seller, 'extract-invoice', { path })
-expect('manual entry (no AI for this file)', ex.source, 'manual')
+expect('blank file: nothing read, typed by hand', ex.source, 'manual')
 const res = await fn(seller, 'run-checks', { invoice_id: ex.invoice_id, buyer_id: b.party_id, fields: {
   invoice_no: 'QA-001', invoice_date: new Date().toISOString().slice(0, 10), due_date: new Date(Date.now() + 45 * 864e5).toISOString().slice(0, 10),
   vendor_name: 'QA Packaging', vendor_gstin: '33AAACQ1234F1Z5', buyer_name: 'QA Mart', po_number: 'PO-77', currency: 'INR',

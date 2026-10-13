@@ -38,3 +38,6 @@ tools/*sessions*.json
 
 # staged static build for `vercel deploy` (copy of app/dist)
 deploy/
+
+# Tesseract language cache written by the OCR benchmark in Node
+*.traineddata

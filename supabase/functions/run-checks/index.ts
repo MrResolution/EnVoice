@@ -8,9 +8,10 @@ import { buyerCredit } from '../_shared/credit.ts'
 import { decide } from '../_shared/decide.ts'
 import { cleanFields } from '../_shared/fields.ts'
 import { list, lookalike, ref, round2 } from '../_shared/normalize.ts'
-import type { CheckResult, Invoice, InvoiceFields } from '../_shared/types.ts'
+import type { AiSource, CheckResult, Invoice, InvoiceFields } from '../_shared/types.ts'
 
 const STATUS = { reject: 'rejected', review: 'review', auto_approve: 'checked' } as const
+const READ_BY: Record<AiSource, string> = { gemini: 'read by Gemini', cache: 'cached AI result', reuse: 'same file read before', ocr: 'read on the device', manual: 'typed by hand' }
 
 handle(['supplier'], async (body, caller, db) => {
   const id = String(body.invoice_id ?? '')
@@ -32,7 +33,7 @@ handle(['supplier'], async (body, caller, db) => {
   const { row, hash } = await snapshotRecord(db, id)
   await appendAudit(db, {
     invoice_id: id, event_type: 'fields_extracted', file_hash: row.file_hash, record_hash: hash, actor_id: caller.id,
-    summary: `fields confirmed by the supplier · ${edited.length ? `${edited.length} changed after AI reading` : 'no changes after AI reading'}`,
+    summary: `fields confirmed by the supplier · ${READ_BY[row.ai_source as AiSource] ?? 'source unknown'}${row.ai_fields ? ` · ${edited.length ? `${edited.length} changed after reading` : 'unchanged'}` : ''}`,
   })
 
   // Context for the pure checks, loaded once.

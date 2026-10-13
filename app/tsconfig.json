@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -10,8 +14,23 @@
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "types": ["vite/client"],
-    "paths": { "@shared/*": ["../supabase/functions/_shared/*"] }
+    "types": [
+      "vite/client"
+    ],
+    "paths": {
+      "@shared/*": [
+        "../supabase/functions/_shared/*"
+      ]
+    }
   },
-  "include": ["src", "../supabase/functions/_shared/types.ts", "../supabase/functions/_shared/normalize.ts", "../supabase/functions/_shared/risk.ts", "../supabase/functions/_shared/canon.ts"]
+  "include": [
+    "src",
+    "../supabase/functions/_shared/types.ts",
+    "../supabase/functions/_shared/normalize.ts",
+    "../supabase/functions/_shared/risk.ts",
+    "../supabase/functions/_shared/canon.ts"
+  ],
+  "exclude": [
+    "src/test/ocr-real.test.ts"
+  ]
 }

@@ -2,7 +2,8 @@
 
 export type Status = 'pass' | 'warn' | 'fail'
 export type Category = 'three_way' | 'duplicates' | 'vendor_bank' | 'integrity' | 'behaviour'
-export type AiSource = 'gemini' | 'cache' | 'reuse' | 'manual'
+/** Who read the fields: the server (gemini, cache, reuse), the seller's device (ocr) or the seller's hands (manual). */
+export type AiSource = 'gemini' | 'cache' | 'reuse' | 'ocr' | 'manual'
 
 export type LineItem = { description: string; hsn?: string | null; qty: number; unit_price: number; amount: number }
 

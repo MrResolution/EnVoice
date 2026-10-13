@@ -1,7 +1,8 @@
 # Gemini extraction
 
 Called only from `supabase/functions/extract-invoice`. Key: Edge Function secret `GEMINI_API_KEY`.
-Model: secret `GEMINI_MODEL`, default `gemini-flash-latest`. The file goes inline as base64 (image or PDF, ≤ 5 MB).
+Model: secret `GEMINI_MODEL` first, then `gemini-flash-latest`, `gemini-2.5-flash`, `gemini-flash-lite-latest` (Google retires
+versioned names: 1.5 and 2.0 already return 404). The file goes inline as base64 (image or PDF, ≤ 5 MB).
 
 ## Safety design
 - **AI reads, code decides.** The prompt asks only for printed values, never "is this valid?".
@@ -55,4 +56,5 @@ confidence: your 0-1 estimate that every non-null field was read correctly.
 2. **Sample cache** → `_shared/sample-cache.json` (file hash → fields, written by `tools/make_samples.py`), labelled
    "cached AI result". Disable with secret `AI_CACHE=off` to show live AI on the samples.
 3. **Gemini** with a 20-second timeout.
-4. **Error, 429 or timeout** → `{source: "manual"}`: the review screen opens with empty fields to type in.
+4. **Error, 429, timeout or an empty reading** → the app reads the file on the device (Tesseract + `app/src/lib/ocr/parser.ts`)
+   and saves it as source `ocr` (always reviewed by a person); if that fails too, the fields are typed by hand.

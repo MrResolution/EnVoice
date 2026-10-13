@@ -42,12 +42,18 @@ export function CountUp({ value, format, duration = 0.9 }: { value: number; form
   const [shown, setShown] = useState(reduce ? value : 0)
   const from = useRef(0)
   useEffect(() => {
-    if (reduce) { setShown(value); return }
-    const c = animate(from.current, value, { duration, ease: [0.22, 1, 0.36, 1], onUpdate: (v) => setShown(v) })
-    from.current = value
+    if (reduce || from.current === value) { from.current = value; setShown(value); return }
+    // `from` follows what is on screen, so an interrupted run (re-render, React's dev double effect) resumes from
+    // there instead of freezing part-way ("1.94 invoices").
+    const c = animate(from.current, value, {
+      duration, ease: [0.22, 1, 0.36, 1],
+      onUpdate: (v) => { from.current = v; setShown(v) },
+      onComplete: () => { from.current = value; setShown(value) },
+    })
     return () => c.stop()
   }, [value, reduce, duration])
-  return <>{format(Math.round(shown * 100) / 100)}</>
+  // Whole targets (counts, whole rupees) animate through whole numbers: "1.94 invoices" is never a real value.
+  return <>{format(Number.isInteger(value) ? Math.round(shown) : Math.round(shown * 100) / 100)}</>
 }
 
 /** Bottom sheet: slides up, drag down (or tap outside) to close. */

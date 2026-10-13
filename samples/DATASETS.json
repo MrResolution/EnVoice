@@ -276,8 +276,8 @@
     },
     "invoice": {
       "invoice_no": "INV-8801",
-      "invoice_date": "2026-10-12",
-      "due_date": "2026-12-11",
+      "invoice_date": "2026-10-13",
+      "due_date": "2026-12-12",
       "files": {
         "png": "samples/INV-8801.png",
         "pdf": "samples/INV-8801.pdf"

@@ -30,7 +30,7 @@ handleUser(async (body, user, db) => {
 
   const party = await must(db.from('parties').insert({
     type: role, name, gstin: g, bank_account: bank, city: text(body.city, 60) || null, owner_id: user.id,
-    email: user.email, phone: text(body.phone, 20) || null, address: text(body.city, 60) || null,
+    email: user.email, phone: text(body.phone, 20) || null, address: text(body.address, 200) || null, // never the city: same-city firms are not self-dealing
     // New buyers have no payment history, so their credit is capped at 60 and a lender reviews their invoices.
     credit_limit: role === 'buyer' ? 1000000 : 0, on_time_rate: null, avg_delay_days: 0, outstanding: 0,
   }).select('id').single(), 'Business')

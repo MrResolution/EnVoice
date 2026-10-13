@@ -32,17 +32,23 @@ describe('allowed', () => {
     const { data } = await as.ravi.from('profiles').select('role, party_id')
     expect(data).toEqual([{ role: 'supplier', party_id: party('ravi') }])
   })
+  // Rules, not counts: people keep raising POs and signing up, so exact totals go stale.
   it('suppliers see their own POs only', async () => {
-    const { data } = await as.ravi.from('purchase_orders').select('po_number').order('po_number')
-    expect(data!.map((p) => p.po_number)).toEqual(['PO-4501', 'PO-4502', 'PO-4504'])
+    const { data } = await as.ravi.from('purchase_orders').select('po_number, supplier_id')
+    expect(data!.every((p) => p.supplier_id === party('ravi'))).toBe(true)
+    expect(data!.map((p) => p.po_number)).toEqual(expect.arrayContaining(['PO-4501', 'PO-4502', 'PO-4504']))
   })
   it('buyers see POs raised by them and their receipts', async () => {
-    const { data } = await as.banyan.from('purchase_orders').select('po_number, delivery_receipts(grn_number)').order('po_number')
-    expect(data!.map((p) => p.po_number)).toEqual(['PO-4502', 'PO-4504'])
+    const { data } = await as.banyan.from('purchase_orders').select('po_number, buyer_id, delivery_receipts(grn_number)')
+    expect(data!.every((p) => p.buyer_id === party('banyan'))).toBe(true)
+    expect(data!.map((p) => p.po_number)).toEqual(expect.arrayContaining(['PO-4502', 'PO-4504']))
   })
   it('lender sees every PO and every profile', async () => {
-    expect((await as.lender.from('purchase_orders').select('id')).data).toHaveLength(4)
-    expect((await as.lender.from('profiles').select('id')).data).toHaveLength(6)
+    const pos = (await as.lender.from('purchase_orders').select('buyer_id, supplier_id')).data!
+    expect(new Set(pos.map((p) => p.buyer_id)).size).toBeGreaterThanOrEqual(2) // more than one buyer's POs
+    expect(new Set(pos.map((p) => p.supplier_id)).size).toBeGreaterThanOrEqual(2)
+    const roles = (await as.lender.from('profiles').select('role')).data!.map((p) => p.role)
+    expect(roles).toEqual(expect.arrayContaining(['supplier', 'buyer', 'lender', 'auditor']))
   })
   it('auditor reads the audit log and anchors', async () => {
     expect((await as.auditor.from('audit_log').select('seq').limit(1)).error).toBeNull()
@@ -50,7 +56,7 @@ describe('allowed', () => {
   })
   it('party names are readable (for lists)', async () => {
     const { data } = await as.peacock.from('parties').select('id, name')
-    expect(data).toHaveLength(world.parties.length)
+    expect(data!.map((p) => p.name)).toEqual(expect.arrayContaining(world.parties.map((p) => p.name)))
   })
 })
 
@@ -90,6 +96,11 @@ describe('denied', () => {
     const path = files?.[0]?.file_path ?? `${party('ravi')}/00000000-0000-4000-8000-000000000000.png`
     const { data, error } = await as.kaveri.storage.from('invoices').createSignedUrl(path, 60)
     expect(error ?? !data?.signedUrl).toBeTruthy()
+  })
+  it('anonymous visitors cannot write or wipe invoices', async () => {
+    const anon = createClient(URL_, KEY, { auth: { persistSession: false } })
+    expect(await refused(anon.from('invoices').update({ amount: 1 }).neq('id', '00000000-0000-0000-0000-000000000000').select())).toBe(true)
+    expect(await refused(anon.from('invoices').delete().neq('id', '00000000-0000-0000-0000-000000000000').select())).toBe(true)
   })
   it('anonymous visitors see nothing', async () => {
     const anon = createClient(URL_, KEY, { auth: { persistSession: false } })

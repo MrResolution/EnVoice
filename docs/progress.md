@@ -58,6 +58,30 @@
 - Lenders can now self-onboard (Google or email → "I lend money" → company name). Prototype trade-off: any lender
   sees every submitted invoice; a real platform would invite and verify lenders. Auditors stay seeded.
 
+## Session 4 (13 Oct, last stretch): bug hunt + AI scanning
+- **Security hole closed:** policies "Allow public read/insert/update on invoices" and ALL privileges for anon had been
+  added by hand in the SQL editor (anyone with the public key could read, edit or truncate invoices). Dropped; migration
+  6 re-asserts read-only access on every table; new RLS test "anonymous visitors cannot write or wipe invoices".
+- **Gemini was never running:** every model name tried (1.5/2.0 flash) is retired (404). `_shared/gemini.ts` now tries
+  `GEMINI_MODEL` then `gemini-flash-latest` / `gemini-2.5-flash` / `gemini-flash-lite-latest`, key in a header, errors
+  mapped to a short reason (no raw API text to users). Live: S1 copy read perfectly in 12 s, a shaded skewed photo in 29 s.
+- **Invented data removed:** when the AI failed, extract-invoice copied the seller's latest PO into the invoice (with
+  Ravi's bank account as a default) and the Review "Match PO" chips overwrote document amounts with PO amounts: both made
+  the three-way match pass by construction. Now the chips only link PO + buyer for read invoices (full pre-fill only for
+  hand-typed ones, which a lender reviews), and "Create manually" uploads an honest "no paper invoice" placeholder.
+- **On-device reader (Tesseract + parser):** new source `ocr` (migration 5): it is the seller's own reading, so the
+  Extraction check always warns and it is never reused. Parser rewritten with GSTIN structure repair, PO/date/number
+  look-alike repair, rupee-first currency, real confidence + "check this" fields; it never "fixes" arithmetic.
+  Real-OCR benchmark (`OCR_BENCH=all npx vitest run src/test/ocr-real.test.ts` in app/): 11 clean samples 100%;
+  20 phone-photo look-alikes 73% → 98% with the new parser and upscaling of small images.
+- Other fixes: onboarding stored the city as the address (same-city firms were rejected as self-dealing; 20 rows fixed);
+  empty AI readings count as unread; delivery dates use India time; GSTIN warning when none on file; count-ups never show
+  fractions; page transitions no longer wait for the old page's exit (navigation could look frozen).
+- Data: seeded PO-4501..4504 + GRN-7001..7004 had been deleted (demo S1/S3/S5/S6 would fail "PO found"): restored.
+  INV-5101's amount was set to ₹1 directly in the DB after it was recorded: Verify flags it (left for the team).
+  DS-8801 dates in samples/DATASETS.json corrected (the image prints 13 Oct / 12 Dec).
+- Before the demo: run `supabase/demo_reset.sql` (clears test invoices incl. QA-001 and the tampered INV-5101).
+
 ## Next steps
 1. Click through every role in the app (browser pane / phone) and fix UI issues.
 2. User: set Edge Function secret `GEMINI_API_KEY` (new key) for live AI on non-sample files.

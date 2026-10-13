@@ -28,9 +28,9 @@ const SAMPLES = [
   ['S4-self-dealing.png', 'S4 · to Kaveri Retail', 'shares a bank account', 'Kaveri Traders'],
 ] as const
 
-type Step = 'idle' | 'preparing' | 'uploading' | 'reading'
-const STEPS: Step[] = ['preparing', 'uploading', 'reading']
-const STEP_TEXT: Record<Step, string> = { idle: '', preparing: 'Fingerprinting the file', uploading: 'Uploading privately', reading: 'AI is reading the fields' }
+type Step = 'idle' | 'preparing' | 'uploading' | 'reading' | 'device'
+const STEPS: Step[] = ['preparing', 'uploading', 'reading', 'device']
+const STEP_TEXT: Record<Step, string> = { idle: '', preparing: 'Fingerprinting the file', uploading: 'Uploading privately', reading: 'AI is reading the fields', device: 'Reading on this device (offline AI)' }
 
 export function Upload() {
   const { profile } = useAuth()
@@ -44,7 +44,7 @@ export function Upload() {
   const [dragging, setDragging] = useState(false)
   const samples = SAMPLES.filter((x) => x[3] === profile?.party_name)
 
-  async function send(original: File) {
+  async function send(original: File, opts: { manual?: boolean } = {}) {
     setError(null)
     try {
       if (!EXT[original.type]) throw new Error('Only PDF, JPEG, PNG or WebP files are accepted.')
@@ -63,9 +63,13 @@ export function Upload() {
       let fallbackFields = null
       let fallbackConfidence = null
       let fallbackBuyerId = null
+      let fallbackUncertain: string[] = []
 
-      // If Gemini failed or fell back to manual, run local OCR fallback while keeping the scanning animation active
-      if (res.source === 'manual' || !res.fields?.invoice_no) {
+      // Only when the server could not read the file: read it here with the on-device model (Tesseract + parser).
+      // A typed-by-hand invoice has no document to read, so it skips this.
+      if (opts.manual) note = 'No paper invoice attached: type the fields from your records. A lender reviews invoices without a scanned document.'
+      else if (res.source === 'manual') {
+        setStep('device')
         try {
           const buyersMap = await parties(true).catch(() => new Map())
           const buyers = [...buyersMap.values()].filter((p) => p.type === 'buyer')
@@ -73,7 +77,10 @@ export function Upload() {
           fallbackFields = ocrRes.fields
           fallbackConfidence = ocrRes.confidence
           fallbackBuyerId = ocrRes.buyer_id
-          note = null
+          fallbackUncertain = ocrRes.uncertain
+          note = ocrRes.fields.invoice_no || ocrRes.fields.amount
+            ? `${res.note ?? 'The AI reader is unavailable.'} Read on this device instead: check every field against the document.`
+            : `${res.note ?? 'The AI reader is unavailable.'} This device could not read it either: type the fields from the document.`
 
           if (res.invoice_id) {
             await call('extract-invoice', {
@@ -85,6 +92,7 @@ export function Upload() {
           }
         } catch (ocrErr) {
           console.warn('Local OCR fallback error:', ocrErr)
+          note = `${res.note ?? 'The AI reader is unavailable.'} Type the fields from the document.`
         }
       }
 
@@ -95,6 +103,7 @@ export function Upload() {
           fallbackFields,
           fallbackConfidence,
           fallbackBuyerId,
+          fallbackUncertain,
         },
       })
     } catch (e) { setError((e as Error).message); setStep('idle') }
@@ -119,10 +128,10 @@ export function Upload() {
         ctx.fillRect(0, 0, 800, 1000)
         ctx.fillStyle = '#142133'
         ctx.font = 'bold 36px sans-serif'
-        ctx.fillText('TAX INVOICE', 60, 90)
+        ctx.fillText('NO PAPER INVOICE', 60, 90)
         ctx.fillStyle = '#626e80'
         ctx.font = '20px sans-serif'
-        ctx.fillText(`Created by ${profile?.party_name ?? 'Supplier'}`, 60, 135)
+        ctx.fillText(`Fields typed by ${profile?.party_name ?? 'the seller'}`, 60, 135)
         ctx.fillText(`Date: ${new Date().toLocaleDateString('en-IN')}`, 60, 170)
         ctx.strokeStyle = '#cdd4de'
         ctx.lineWidth = 2
@@ -132,12 +141,12 @@ export function Upload() {
         ctx.stroke()
         ctx.fillStyle = '#142133'
         ctx.font = '16px monospace'
-        ctx.fillText('Digital entry created via Invoseal', 60, 240)
+        ctx.fillText('No scanned document: a lender reviews this invoice.', 60, 240)
       }
       const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
       if (!blob) throw new Error('Could not generate document.')
       const file = new File([blob], `invoice-${Date.now()}.png`, { type: 'image/png' })
-      await send(file)
+      await send(file, { manual: true })
     } catch (e) {
       setError((e as Error).message)
       setStep('idle')

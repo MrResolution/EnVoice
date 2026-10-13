@@ -5,7 +5,8 @@ import { appendAudit, handle, HttpError, must } from '../_shared/db.ts'
 import { isoDate, money, ref, round2 } from '../_shared/normalize.ts'
 
 const text = (v: unknown, max: number) => (typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : '')
-const today = () => new Date().toISOString().slice(0, 10)
+// India is UTC+5:30: a UTC date would call a delivery made early this morning "in the future".
+const today = () => new Date(Date.now() + 5.5 * 3600_000).toISOString().slice(0, 10)
 
 handle(['buyer'], async (body, caller, db) => {
   if (body.action === 'create_po') {
